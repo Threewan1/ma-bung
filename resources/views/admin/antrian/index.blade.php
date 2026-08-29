@@ -1,112 +1,138 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kelola Antrian - Ma'bung Barbershop</title>
-    <!-- Tailwind CSS via CDN untuk styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome untuk icon -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body class="bg-gray-900 text-white">
+<x-admin-layout title="Kelola Antrian">
 
-    {{-- Navbar Admin --}}
-    <nav class="bg-gray-800 shadow-lg fixed w-full z-50">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <div class="text-2xl font-bold text-yellow-400">
-                <i class="fas fa-cut"></i> Ma'bung Barbershop - Admin
-            </div>
-            <div class="space-x-4">
-                <a href="/admin" class="text-white hover:text-yellow-400">Dashboard</a>
-                <a href="/admin/layanan" class="text-white hover:text-yellow-400">Layanan</a>
-                <a href="/admin/reservasi" class="text-white hover:text-yellow-400">Reservasi</a>
-                <a href="/admin/antrian" class="text-yellow-400 font-bold">Antrian</a>
-                <form method="POST" action="/logout" class="inline">
-                    @csrf
-                    <button type="submit" class="text-white hover:text-yellow-400">Logout</button>
-                </form>
-            </div>
+    <h2 class="fs-2 fw-bold text-gold mb-4">
+        <i class="fas fa-users"></i> Kelola Antrian Hari Ini
+    </h2>
+
+    {{-- Pesan Sukses --}}
+    @if(session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
         </div>
-    </nav>
+    @endif
 
-    {{-- Konten --}}
-    <div class="max-w-7xl mx-auto pt-24 pb-10 px-4">
-        <h2 class="text-2xl font-bold text-yellow-400 mb-6">
-            <i class="fas fa-users"></i> Kelola Antrian Hari Ini
-        </h2>
-
-        {{-- Pesan Sukses --}}
-        @if(session('success'))
-            <div class="bg-green-500 text-white p-3 rounded-lg mb-4">
-                {{ session('success') }}
-            </div>
-        @endif
-
-        {{-- Tabel Antrian --}}
-        <div class="bg-gray-800 rounded-lg overflow-hidden">
-            <table class="w-full">
-                <thead class="bg-gray-700">
-                    <tr>
-                        <th class="px-4 py-3 text-left">No. Antrian</th>
-                        <th class="px-4 py-3 text-left">Pelanggan</th>
-                        <th class="px-4 py-3 text-left">Layanan</th>
-                        <th class="px-4 py-3 text-left">Jam</th>
-                        <th class="px-4 py-3 text-left">Status</th>
-                        <th class="px-4 py-3 text-left">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{-- Loop semua data antrian --}}
-                    @forelse($queues as $queue)
-                    <tr class="border-t border-gray-700">
-                        {{-- Nomor antrian dengan tampilan besar --}}
-                        <td class="px-4 py-3">
-                            <span class="bg-yellow-400 text-gray-900 px-3 py-1 rounded-full font-bold text-lg">
-                                #{{ $queue->nomor_antrian }}
-                            </span>
-                        </td>
-                        <td class="px-4 py-3">{{ $queue->reservation->user->name }}</td>
-                        <td class="px-4 py-3">{{ $queue->reservation->service->nama_layanan }}</td>
-                        <td class="px-4 py-3">{{ $queue->reservation->jam }}</td>
-                        <td class="px-4 py-3">
-                            {{-- Form update status antrian --}}
-                            <form method="POST" action="/admin/antrian/{{ $queue->id }}">
-                                @csrf
-                                @method('PUT')
-                                <select name="status_antrian" onchange="this.form.submit()"
-                                    class="bg-gray-700 text-white px-2 py-1 rounded text-sm">
-                                    <option value="menunggu" {{ $queue->status_antrian == 'menunggu' ? 'selected' : '' }}>Menunggu</option>
-                                    <option value="diproses" {{ $queue->status_antrian == 'diproses' ? 'selected' : '' }}>Diproses</option>
-                                    <option value="selesai" {{ $queue->status_antrian == 'selesai' ? 'selected' : '' }}>Selesai</option>
-                                </select>
-                            </form>
-                        </td>
-                        <td class="px-4 py-3">
-                            {{-- Tombol Hapus --}}
-                            <form method="POST" action="/admin/antrian/{{ $queue->id }}" class="inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit"
-                                    onclick="return confirm('Yakin ingin menghapus antrian ini?')"
-                                    class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm">
-                                    <i class="fas fa-trash"></i> Hapus
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                    @empty
-                    {{-- Tampilkan pesan jika belum ada antrian --}}
-                    <tr>
-                        <td colspan="6" class="px-4 py-6 text-center text-gray-400">
-                            Belum ada antrian hari ini
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
+    {{-- ================================================= --}}
+    {{-- VERSI TABEL (desktop, >=768px) --}}
+    {{-- ================================================= --}}
+    <div class="bg-panel rounded-3 overflow-hidden d-none d-md-block">
+        <div class="table-responsive">
+        <table class="table table-dark table-hover align-middle mb-0">
+            <thead class="bg-surface">
+                <tr>
+                    <th>No. Antrian</th>
+                    <th>Pelanggan</th>
+                    <th>Layanan</th>
+                    <th>Jam</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{-- Loop semua data antrian --}}
+                @forelse($queues as $queue)
+                <tr>
+                    {{-- Nomor antrian dengan tampilan besar --}}
+                    <td>
+                        <span class="badge rounded-pill text-bg-primary fs-6">
+                            #{{ $queue->nomor_antrian }}
+                        </span>
+                    </td>
+                    <td>{{ $queue->reservation->user->name }}</td>
+                    <td>{{ $queue->reservation->service->nama_layanan }}</td>
+                    <td>{{ $queue->reservation->jam }}</td>
+                    <td>
+                        {{-- Form update status antrian --}}
+                        <form method="POST" action="/admin/antrian/{{ $queue->id }}" class="mb-0">
+                            @csrf
+                            @method('PUT')
+                            <select name="status_antrian" onchange="this.form.submit()" class="form-select form-select-sm">
+                                <option value="menunggu" {{ $queue->status_antrian == 'menunggu' ? 'selected' : '' }}>Menunggu</option>
+                                <option value="diproses" {{ $queue->status_antrian == 'diproses' ? 'selected' : '' }}>Diproses</option>
+                                <option value="selesai" {{ $queue->status_antrian == 'selesai' ? 'selected' : '' }}>Selesai</option>
+                            </select>
+                        </form>
+                    </td>
+                    <td>
+                        {{-- Tombol Hapus --}}
+                        <form method="POST" action="/admin/antrian/{{ $queue->id }}" class="mb-0">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit"
+                                onclick="return confirm('Yakin ingin menghapus antrian ini?')"
+                                class="btn btn-danger btn-sm">
+                                <i class="fas fa-trash"></i> Hapus
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                @empty
+                {{-- Tampilkan pesan jika belum ada antrian --}}
+                <tr>
+                    <td colspan="6" class="text-center text-body-secondary py-4">
+                        Belum ada antrian hari ini
+                    </td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
         </div>
     </div>
 
-</body>
-</html>
+    {{-- ================================================= --}}
+    {{-- VERSI CARD (mobile/tablet, <768px) --}}
+    {{-- ================================================= --}}
+    <div class="table-card-list d-block d-md-none">
+        @forelse($queues as $queue)
+            <div class="table-card-item">
+
+                <div class="table-card-item-title">
+                    <span class="badge rounded-pill text-bg-primary fs-6 me-2">
+                        #{{ $queue->nomor_antrian }}
+                    </span>
+                    {{ $queue->reservation->user->name }}
+                </div>
+
+                <div class="table-card-item-row">
+                    <span class="table-card-item-label">Layanan</span>
+                    <span class="table-card-item-value">{{ $queue->reservation->service->nama_layanan }}</span>
+                </div>
+
+                <div class="table-card-item-row">
+                    <span class="table-card-item-label">Jam</span>
+                    <span class="table-card-item-value">{{ $queue->reservation->jam }}</span>
+                </div>
+
+                <div class="mt-3">
+                    <div class="table-card-item-label mb-1">Status</div>
+                    <form method="POST" action="/admin/antrian/{{ $queue->id }}" class="mb-0">
+                        @csrf
+                        @method('PUT')
+                        <select name="status_antrian" onchange="this.form.submit()" class="form-select form-select-sm">
+                            <option value="menunggu" {{ $queue->status_antrian == 'menunggu' ? 'selected' : '' }}>Menunggu</option>
+                            <option value="diproses" {{ $queue->status_antrian == 'diproses' ? 'selected' : '' }}>Diproses</option>
+                            <option value="selesai" {{ $queue->status_antrian == 'selesai' ? 'selected' : '' }}>Selesai</option>
+                        </select>
+                    </form>
+                </div>
+
+                <div class="table-card-item-footer">
+                    <form method="POST" action="/admin/antrian/{{ $queue->id }}" class="mb-0">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit"
+                            onclick="return confirm('Yakin ingin menghapus antrian ini?')"
+                            class="btn btn-danger btn-sm w-100">
+                            <i class="fas fa-trash"></i> Hapus
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+        @empty
+            <div class="table-card-item text-center text-body-secondary">
+                Belum ada antrian hari ini
+            </div>
+        @endforelse
+    </div>
+
+</x-admin-layout>

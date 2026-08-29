@@ -26,6 +26,20 @@ class ProfileUpdateRequest extends FormRequest
                 'max:255',
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
+            'no_hp' => ['nullable', 'string', 'regex:/^[0-9]{10,15}$/'],
+            'tanggal_lahir' => ['nullable', 'date', 'before:today'],
+        ];
+    }
+
+    /**
+     * Get custom messages for validator errors.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'no_hp.regex' => 'Nomor WhatsApp harus berupa angka saja, minimal 10 digit.',
         ];
     }
 }

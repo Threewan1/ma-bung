@@ -1,33 +1,33 @@
 <x-guest-layout>
 
     <!-- Background utama -->
-    <div class="min-h-screen flex items-center justify-center bg-[#0f0f0f] px-4">
+    <div class="min-vh-100 d-flex align-items-center justify-content-center px-3 py-3">
 
         <!-- Card Login -->
-        <div class="w-full max-w-md bg-[#1a1a1a] rounded-2xl shadow-2xl p-8 border border-yellow-500">
+        <div class="w-100 card-glass rounded-4 px-4 py-3" style="max-width: 400px;">
 
             <!-- Judul -->
-            <div class="text-center mb-8">
+            <div class="text-center mb-3">
 
                 <!-- Logo / Icon -->
-                <div class="flex justify-center mb-4">
-                    <div class="w-20 h-20 rounded-full bg-yellow-500 flex items-center justify-center text-black text-3xl font-bold shadow-lg">
+                <div class="d-flex justify-content-center mb-2">
+                    <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center fw-bold shadow" style="width: 3.5rem; height: 3.5rem; font-size: 1.25rem;">
                         M
                     </div>
                 </div>
 
                 <!-- Nama Barbershop -->
-                <h1 class="text-3xl font-bold text-yellow-400 tracking-wide">
+                <h1 class="fs-5 fw-bold text-gold mb-0">
                     MA'BUNG BARBERSHOP
                 </h1>
 
-                <p class="text-gray-400 mt-2 text-sm">
+                <p class="text-body-secondary mt-1 small mb-0">
                     Premium Haircut & Grooming
                 </p>
             </div>
 
             <!-- Status session -->
-            <x-auth-session-status class="mb-4 text-green-400" :status="session('status')" />
+            <x-auth-session-status class="mb-3" :status="session('status')" />
 
             <!-- Form Login -->
             <form method="POST" action="{{ route('login') }}">
@@ -40,14 +40,14 @@
                     <!-- Label -->
                     <x-input-label
                         for="email"
-                        :value="__('Email')"
-                        class="text-yellow-400"
+                        value="Email"
+                        class="text-gold small mb-1"
                     />
 
                     <!-- Input email -->
                     <x-text-input
                         id="email"
-                        class="block mt-2 w-full bg-[#262626] border-gray-700 text-white focus:border-yellow-500 focus:ring-yellow-500 rounded-lg"
+                        class="w-100 form-control-sm"
                         type="email"
                         name="email"
                         :value="old('email')"
@@ -59,25 +59,25 @@
                     <!-- Error email -->
                     <x-input-error
                         :messages="$errors->get('email')"
-                        class="mt-2 text-red-400"
+                        class="mt-1"
                     />
 
                 </div>
 
                 <!-- Password -->
-                <div class="mt-5">
+                <div class="mt-2">
 
                     <!-- Label -->
                     <x-input-label
                         for="password"
-                        :value="__('Password')"
-                        class="text-yellow-400"
+                        value="Kata Sandi"
+                        class="text-gold small mb-1"
                     />
 
                     <!-- Input password -->
                     <x-text-input
                         id="password"
-                        class="block mt-2 w-full bg-[#262626] border-gray-700 text-white focus:border-yellow-500 focus:ring-yellow-500 rounded-lg"
+                        class="w-100 form-control-sm"
                         type="password"
                         name="password"
                         required
@@ -87,42 +87,42 @@
                     <!-- Error password -->
                     <x-input-error
                         :messages="$errors->get('password')"
-                        class="mt-2 text-red-400"
+                        class="mt-1"
                     />
 
                 </div>
 
                 <!-- Remember Me -->
-                <div class="block mt-5">
+                <div class="mt-2">
 
-                    <label for="remember_me" class="inline-flex items-center">
+                    <div class="form-check">
 
                         <input
                             id="remember_me"
                             type="checkbox"
-                            class="rounded border-gray-600 bg-[#262626] text-yellow-500 shadow-sm focus:ring-yellow-500"
+                            class="form-check-input"
                             name="remember"
                         >
 
-                        <span class="ms-2 text-sm text-gray-300">
-                            {{ __('Remember me') }}
-                        </span>
+                        <label for="remember_me" class="form-check-label text-body-secondary small">
+                            Ingat saya
+                        </label>
 
-                    </label>
+                    </div>
 
                 </div>
 
                 <!-- Tombol -->
-                <div class="flex items-center justify-between mt-8">
+                <div class="d-flex align-items-center justify-content-between mt-3">
 
                     <!-- Forgot password -->
                     @if (Route::has('password.request'))
 
                         <a
-                            class="text-sm text-gray-400 hover:text-yellow-400 transition"
+                            class="small text-body-secondary link-underline-opacity-0"
                             href="{{ route('password.request') }}"
                         >
-                            Forgot Password?
+                            Lupa Kata Sandi?
                         </a>
 
                     @endif
@@ -130,9 +130,9 @@
                     <!-- Button Login -->
                     <button
                         type="submit"
-                        class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-6 py-3 rounded-lg transition duration-300 shadow-lg"
+                        class="btn btn-primary btn-sm px-3 py-2"
                     >
-                        LOGIN
+                        MASUK
                     </button>
 
                 </div>
@@ -140,15 +140,15 @@
             </form>
 
             <!-- Register -->
-            <div class="mt-8 text-center">
+            <div class="mt-3 text-center">
 
-                <p class="text-gray-400 text-sm">
+                <p class="text-body-secondary small mb-1">
                     Belum punya akun?
                 </p>
 
                 <a
                     href="{{ route('register') }}"
-                    class="text-yellow-400 hover:text-yellow-300 font-semibold transition"
+                    class="text-gold fw-semibold"
                 >
                     Daftar Sekarang
                 </a>

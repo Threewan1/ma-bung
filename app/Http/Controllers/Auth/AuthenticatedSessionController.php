@@ -28,8 +28,17 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        // Setelah login berhasil,
-        // user diarahkan ke halaman reservasi
+        // Admin diarahkan ke dashboard admin, barber diarahkan ke
+        // halaman kerjanya sendiri, pelanggan diarahkan ke halaman
+        // reservasi.
+        if ($request->user()->role === 'admin') {
+            return redirect()->intended(route('admin.dashboard'));
+        }
+
+        if ($request->user()->role === 'barber') {
+            return redirect()->intended(route('barber.dashboard'));
+        }
+
         return redirect()->intended('/reservasi');
     }
 

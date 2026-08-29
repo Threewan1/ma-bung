@@ -1,88 +1,75 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reservasi Saya - Ma'bung Barbershop</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body class="bg-gray-900 text-white">
+<x-app-layout>
 
-    {{-- Navbar --}}
-    <nav class="bg-gray-800 shadow-lg fixed w-full z-50">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <div class="text-2xl font-bold text-yellow-400">
-                <i class="fas fa-cut"></i> Ma'bung Barbershop
-            </div>
-            <div class="space-x-4">
-                <a href="/dashboard" class="text-white hover:text-yellow-400">Dashboard</a>
-                <form method="POST" action="/logout" class="inline">
-                    @csrf
-                    <button type="submit" class="text-white hover:text-yellow-400">Logout</button>
-                </form>
-            </div>
-        </div>
-    </nav>
-
-    {{-- Konten --}}
-    <div class="max-w-5xl mx-auto pt-24 pb-10 px-4">
-        <h2 class="text-2xl font-bold text-yellow-400 mb-6">
-            <i class="fas fa-list"></i> Reservasi Saya
+    {{-- Judul halaman mengambang di pojok kanan atas, transparan, dan
+         tetap diam di tempat (fixed) walau halaman di-scroll. --}}
+    <div class="page-title-floating">
+        <h2 class="fs-4 fw-bold text-white mb-0">
+            Reservasi Saya
         </h2>
+    </div>
 
+    <div class="container pt-5 pb-4">
         {{-- Pesan Sukses --}}
         @if(session('success'))
-            <div class="bg-green-500 text-white p-3 rounded-lg mb-4">
+            <div class="alert alert-success">
                 {{ session('success') }}
             </div>
         @endif
 
-        {{-- Tombol Buat Reservasi --}}
-        <a href="/reservasi/create"
-            class="bg-yellow-400 text-gray-900 px-6 py-2 rounded-lg font-bold hover:bg-yellow-500 inline-block mb-6">
-            <i class="fas fa-plus"></i> Buat Reservasi Baru
-        </a>
+        {{-- Indikator filter status aktif --}}
+        @if(request('status'))
+            <div class="alert alert-info d-flex flex-wrap align-items-center justify-content-between gap-2">
+                <span>
+                    Menampilkan reservasi berstatus:
+                    <strong>{{ request('status') === 'done' ? 'Selesai' : ucfirst(request('status')) }}</strong>
+                </span>
+                <a href="{{ route('reservasi.index') }}" class="btn btn-sm btn-outline-light">Tampilkan Semua</a>
+            </div>
+        @endif
 
         {{-- Tabel Reservasi --}}
         @if($reservations->isEmpty())
-            <div class="bg-gray-800 p-6 rounded-lg text-center text-gray-400">
-                <i class="fas fa-calendar-times text-5xl mb-4"></i>
-                <p>Belum ada reservasi. Buat reservasi sekarang!</p>
+            <div class="bg-panel p-5 rounded-3 text-center text-body-secondary">
+                <i class="fas fa-calendar-times fa-3x mb-3"></i>
+                <p class="mb-0">Belum ada reservasi. Buat reservasi sekarang!</p>
             </div>
         @else
-            <div class="bg-gray-800 rounded-lg overflow-hidden">
-                <table class="w-full">
-                    <thead class="bg-gray-700">
+            {{-- ================================================= --}}
+            {{-- VERSI TABEL (desktop, >=768px) --}}
+            {{-- ================================================= --}}
+            <div class="bg-panel rounded-3 overflow-hidden d-none d-md-block">
+                <div class="table-responsive">
+                <table class="table table-dark table-hover align-middle mb-0">
+                    <thead class="bg-surface">
 
                         <tr>
 
                             {{-- Nomor --}}
-                            <th class="px-4 py-3 text-left">No</th>
+                            <th>No</th>
 
                             {{-- Nama layanan --}}
-                            <th class="px-4 py-3 text-left">Layanan</th>
+                            <th>Layanan</th>
 
                             {{-- Tanggal reservasi --}}
-                            <th class="px-4 py-3 text-left">Tanggal</th>
+                            <th>Tanggal</th>
 
                             {{-- Jam reservasi --}}
-                            <th class="px-4 py-3 text-left">Jam</th>
+                            <th>Jam</th>
 
                             {{-- Metode pembayaran --}}
-                            <th class="px-4 py-3 text-left">Pembayaran</th>
+                            <th>Pembayaran</th>
 
                             {{-- Status pembayaran --}}
-                            <th class="px-4 py-3 text-left">Status Bayar</th>
+                            <th>Status Bayar</th>
 
                             {{-- Nomor antrean --}}
-                            <th class="px-4 py-3 text-left">No. Antrian</th>
+                            <th>No. Antrian</th>
 
                             {{-- Status reservasi --}}
-                            <th class="px-4 py-3 text-left">Status Reservasi</th>
+                            <th>Status Reservasi</th>
 
                             {{-- Tombol aksi --}}
-                            <th class="px-4 py-3 text-left">Aksi</th>
+                            <th>Aksi</th>
 
                         </tr>
 
@@ -94,12 +81,12 @@
                         @foreach($reservations as $reservasi)
 
                             {{-- Baris untuk satu reservasi --}}
-                            <tr class="border-b border-gray-700 hover:bg-gray-800">
+                            <tr data-reservasi-id="{{ $reservasi->id }}">
 
                                 {{-- ========================================= --}}
                                 {{-- NOMOR --}}
                                 {{-- ========================================= --}}
-                                <td class="px-4 py-3">
+                                <td>
                                     {{-- Menampilkan nomor urut --}}
                                     {{ $loop->iteration }}
                                 </td>
@@ -108,7 +95,7 @@
                                 {{-- ========================================= --}}
                                 {{-- LAYANAN --}}
                                 {{-- ========================================= --}}
-                                <td class="px-4 py-3">
+                                <td>
                                     {{-- Menampilkan nama layanan --}}
                                     {{ $reservasi->service->nama_layanan ?? '-' }}
                                 </td>
@@ -117,7 +104,7 @@
                                 {{-- ========================================= --}}
                                 {{-- TANGGAL --}}
                                 {{-- ========================================= --}}
-                                <td class="px-4 py-3">
+                                <td>
                                     {{-- Format tanggal reservasi --}}
                                     {{ \Carbon\Carbon::parse($reservasi->tanggal)->format('d/m/Y') }}
                                 </td>
@@ -126,7 +113,7 @@
                                 {{-- ========================================= --}}
                                 {{-- JAM --}}
                                 {{-- ========================================= --}}
-                                <td class="px-4 py-3">
+                                <td>
                                     {{-- Menampilkan jam reservasi --}}
                                     {{ $reservasi->jam ?? '-' }}
                                 </td>
@@ -135,27 +122,18 @@
                                 {{-- ========================================= --}}
                                 {{-- PEMBAYARAN --}}
                                 {{-- ========================================= --}}
-                                <td class="px-4 py-3">
+                                <td>
 
-                                    {{-- 
+                                    {{--
                                         Menampilkan metode pembayaran.
                                         Contoh:
                                         - cash
                                         - transfer
                                         - qris
                                     --}}
-                                    <div class="font-medium">
+                                    <div class="fw-medium">
                                         {{ ucfirst($reservasi->payment_method ?? '-') }}
                                     </div>
-
-                                    {{-- 
-                                        Menampilkan channel pembayaran.
-                                        Contoh:
-                                        - QRIS
-                                        - DANA
-                                        - GoPay
-                                        - BCA
-                                    --}}
 
                                 </td>
 
@@ -163,59 +141,68 @@
                                 {{-- ========================================= --}}
                                 {{-- STATUS PEMBAYARAN --}}
                                 {{-- ========================================= --}}
-                                <td class="px-4 py-3">
+                                <td data-payment-badge>
 
-                                    {{-- 
+                                    {{--
                                         Status pembayaran dibuat menjadi badge
                                         agar lebih mudah dibaca.
                                     --}}
                                     @php
-                                        $paymentStatus = strtolower($reservasi->payment_status ?? 'pending');
+                                        $paymentStatus = strtolower($reservasi->payment_status ?? 'unpaid');
                                     @endphp
 
 
-                                    {{-- STATUS PENDING --}}
-                                    @if($paymentStatus === 'pending')
+                                    {{-- STATUS BELUM BAYAR --}}
+                                    @if($paymentStatus === 'unpaid')
 
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                            {{-- Ikon status pending --}}
-                                            <i class="fas fa-clock mr-1"></i>
+                                        <span class="badge rounded-pill text-bg-danger">
+                                            <i class="fas fa-exclamation-circle me-1"></i>
+                                            Belum Bayar
+                                        </span>
+
+
+                                    {{-- STATUS MENUNGGU VERIFIKASI --}}
+                                    @elseif($paymentStatus === 'waiting_verification')
+
+                                        <span class="badge rounded-pill text-bg-warning">
+                                            {{-- Ikon status menunggu --}}
+                                            <i class="fas fa-clock me-1"></i>
 
                                             {{-- Teks status --}}
-                                            Pending
+                                            Menunggu Verifikasi
                                         </span>
 
 
                                     {{-- STATUS PAID / BERHASIL --}}
                                     @elseif(in_array($paymentStatus, ['paid', 'success', 'settlement']))
 
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        <span class="badge rounded-pill text-bg-success">
                                             {{-- Ikon pembayaran berhasil --}}
-                                            <i class="fas fa-check-circle mr-1"></i>
+                                            <i class="fas fa-check-circle me-1"></i>
 
                                             {{-- Teks status --}}
                                             Lunas
                                         </span>
 
 
-                                    {{-- STATUS FAILED / GAGAL --}}
-                                    @elseif(in_array($paymentStatus, ['failed', 'deny', 'cancel', 'expired']))
+                                    {{-- STATUS REJECTED / GAGAL --}}
+                                    @elseif(in_array($paymentStatus, ['rejected', 'failed', 'deny', 'cancel', 'expired']))
 
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        <span class="badge rounded-pill text-bg-danger">
                                             {{-- Ikon pembayaran gagal --}}
-                                            <i class="fas fa-times-circle mr-1"></i>
+                                            <i class="fas fa-times-circle me-1"></i>
 
                                             {{-- Teks status --}}
-                                            Gagal
+                                            Ditolak
                                         </span>
 
 
                                     {{-- STATUS LAINNYA --}}
                                     @else
 
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                        <span class="badge rounded-pill text-bg-secondary">
                                             {{-- Ikon status lainnya --}}
-                                            <i class="fas fa-info-circle mr-1"></i>
+                                            <i class="fas fa-info-circle me-1"></i>
 
                                             {{-- Menampilkan status asli --}}
                                             {{ ucfirst($paymentStatus) }}
@@ -229,9 +216,9 @@
                                 {{-- ========================================= --}}
                                 {{-- NOMOR ANTRIAN --}}
                                 {{-- ========================================= --}}
-                                <td class="px-4 py-3">
+                                <td data-queue-value>
 
-                                    {{-- 
+                                    {{--
                                         Menampilkan nomor antrean.
                                         Jika belum mendapatkan nomor antrean,
                                         tampilkan tanda "-".
@@ -244,7 +231,7 @@
                                 {{-- ========================================= --}}
                                 {{-- STATUS RESERVASI --}}
                                 {{-- ========================================= --}}
-                                <td class="px-4 py-3">
+                                <td data-status-badge>
 
                                     @php
                                         // Mengambil status reservasi.
@@ -255,8 +242,8 @@
                                     {{-- STATUS PENDING --}}
                                     @if($reservationStatus === 'pending')
 
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                            <i class="fas fa-clock mr-1"></i>
+                                        <span class="badge rounded-pill text-bg-warning">
+                                            <i class="fas fa-clock me-1"></i>
                                             Pending
                                         </span>
 
@@ -264,17 +251,26 @@
                                     {{-- STATUS CONFIRMED --}}
                                     @elseif(in_array($reservationStatus, ['confirmed', 'confirm']))
 
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                            <i class="fas fa-check mr-1"></i>
+                                        <span class="badge rounded-pill text-bg-info">
+                                            <i class="fas fa-check me-1"></i>
                                             Dikonfirmasi
                                         </span>
 
 
-                                    {{-- STATUS COMPLETED --}}
-                                    @elseif(in_array($reservationStatus, ['completed', 'complete', 'selesai']))
+                                    {{-- STATUS SEDANG DILAYANI --}}
+                                    @elseif($reservationStatus === 'sedang_dilayani')
 
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                            <i class="fas fa-check-double mr-1"></i>
+                                        <span class="badge rounded-pill text-bg-primary">
+                                            <i class="fas fa-scissors me-1"></i>
+                                            Sedang Dilayani
+                                        </span>
+
+
+                                    {{-- STATUS COMPLETED --}}
+                                    @elseif(in_array($reservationStatus, ['completed', 'complete', 'selesai', 'done']))
+
+                                        <span class="badge rounded-pill text-bg-success">
+                                            <i class="fas fa-check-double me-1"></i>
                                             Selesai
                                         </span>
 
@@ -282,8 +278,8 @@
                                     {{-- STATUS CANCELLED --}}
                                     @elseif(in_array($reservationStatus, ['cancelled', 'canceled', 'batal']))
 
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                            <i class="fas fa-times mr-1"></i>
+                                        <span class="badge rounded-pill text-bg-danger">
+                                            <i class="fas fa-times me-1"></i>
                                             Dibatalkan
                                         </span>
 
@@ -291,8 +287,8 @@
                                     {{-- STATUS LAINNYA --}}
                                     @else
 
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                            <i class="fas fa-info-circle mr-1"></i>
+                                        <span class="badge rounded-pill text-bg-secondary">
+                                            <i class="fas fa-info-circle me-1"></i>
                                             {{ ucfirst($reservationStatus) }}
                                         </span>
 
@@ -304,9 +300,9 @@
                                 {{-- ========================================= --}}
                                 {{-- AKSI --}}
                                 {{-- ========================================= --}}
-                                <td class="px-4 py-3">
+                                <td>
 
-                                    <div class="flex items-center gap-2">
+                                    <div class="d-flex align-items-center gap-2">
 
                                         {{-- ================================= --}}
                                         {{-- TOMBOL DETAIL --}}
@@ -314,10 +310,10 @@
 
                                         <a
                                             href="{{ route('reservasi.show', $reservasi->id) }}"
-                                            class="inline-flex items-center px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm transition"
+                                            class="btn btn-info btn-sm text-white"
                                         >
                                             {{-- Ikon mata --}}
-                                            <i class="fas fa-eye mr-1"></i>
+                                            <i class="fas fa-eye me-1"></i>
 
                                             {{-- Teks tombol --}}
                                             Detail
@@ -328,38 +324,36 @@
                                         {{-- TOMBOL BATALKAN --}}
                                         {{-- ================================= --}}
 
-                                        {{-- 
+                                        {{--
                                             Tombol Batalkan hanya ditampilkan
                                             jika status reservasi masih pending.
                                         --}}
-                                        @if($reservationStatus === 'pending')
+                                        <form
+                                            action="{{ route('reservasi.destroy', $reservasi->id) }}"
+                                            method="POST"
+                                            onsubmit="return confirm('Apakah Anda yakin ingin membatalkan reservasi ini?')"
+                                            class="mb-0 {{ $reservationStatus === 'pending' ? '' : 'd-none' }}"
+                                            data-batalkan-form
+                                        >
 
-                                            <form
-                                                action="{{ route('reservasi.destroy', $reservasi->id) }}"
-                                                method="POST"
-                                                onsubmit="return confirm('Apakah Anda yakin ingin membatalkan reservasi ini?')"
+                                            {{-- Proteksi CSRF Laravel --}}
+                                            @csrf
+
+                                            {{-- Method DELETE untuk menghapus/membatalkan --}}
+                                            @method('DELETE')
+
+                                            <button
+                                                type="submit"
+                                                class="btn btn-danger btn-sm"
                                             >
+                                                {{-- Ikon batal --}}
+                                                <i class="fas fa-times me-1"></i>
 
-                                                {{-- Proteksi CSRF Laravel --}}
-                                                @csrf
+                                                {{-- Teks tombol --}}
+                                                Batalkan
+                                            </button>
 
-                                                {{-- Method DELETE untuk menghapus/membatalkan --}}
-                                                @method('DELETE')
-
-                                                <button
-                                                    type="submit"
-                                                    class="inline-flex items-center px-3 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm transition"
-                                                >
-                                                    {{-- Ikon batal --}}
-                                                    <i class="fas fa-times mr-1"></i>
-
-                                                    {{-- Teks tombol --}}
-                                                    Batalkan
-                                                </button>
-
-                                            </form>
-
-                                        @endif
+                                        </form>
 
                                     </div>
 
@@ -370,9 +364,204 @@
                         @endforeach
                     </tbody>
                 </table>
+                </div>
+            </div>
+
+            {{-- ================================================= --}}
+            {{-- VERSI CARD (mobile/tablet, <768px) --}}
+            {{-- 2 kolom berdampingan mulai >=600px lewat --}}
+            {{-- .table-card-grid, tetap 1 kolom di bawah itu --}}
+            {{-- ================================================= --}}
+            <div class="table-card-list table-card-grid d-block d-md-none">
+                @foreach($reservations as $reservasi)
+                    @php
+                        $paymentStatus = strtolower($reservasi->payment_status ?? 'unpaid');
+                        $paymentBadge = match(true) {
+                            $paymentStatus === 'unpaid' => ['danger', 'fa-exclamation-circle', 'Belum Bayar'],
+                            $paymentStatus === 'waiting_verification' => ['warning', 'fa-clock', 'Menunggu Verifikasi'],
+                            in_array($paymentStatus, ['paid', 'success', 'settlement']) => ['success', 'fa-check-circle', 'Lunas'],
+                            in_array($paymentStatus, ['rejected', 'failed', 'deny', 'cancel', 'expired']) => ['danger', 'fa-times-circle', 'Ditolak'],
+                            default => ['secondary', 'fa-info-circle', ucfirst($paymentStatus)],
+                        };
+
+                        $reservationStatus = strtolower($reservasi->status ?? 'pending');
+                        $reservationBadge = match(true) {
+                            $reservationStatus === 'pending' => ['warning', 'fa-clock', 'Pending'],
+                            in_array($reservationStatus, ['confirmed', 'confirm']) => ['info', 'fa-check', 'Dikonfirmasi'],
+                            $reservationStatus === 'sedang_dilayani' => ['primary', 'fa-scissors', 'Sedang Dilayani'],
+                            in_array($reservationStatus, ['completed', 'complete', 'selesai', 'done']) => ['success', 'fa-check-double', 'Selesai'],
+                            in_array($reservationStatus, ['cancelled', 'canceled', 'batal']) => ['danger', 'fa-times', 'Dibatalkan'],
+                            default => ['secondary', 'fa-info-circle', ucfirst($reservationStatus)],
+                        };
+                    @endphp
+
+                    <div class="table-card-item" data-reservasi-id="{{ $reservasi->id }}">
+
+                        {{-- Nomor + nama layanan sebagai judul card --}}
+                        <div class="table-card-item-title">
+                            #{{ $loop->iteration }} &mdash; {{ $reservasi->service->nama_layanan ?? '-' }}
+                        </div>
+
+                        {{-- Tanggal dan Jam berdampingan --}}
+                        <div class="table-card-item-cols">
+                            <div>
+                                <div class="table-card-item-label">Tanggal</div>
+                                <div class="table-card-item-value">{{ \Carbon\Carbon::parse($reservasi->tanggal)->format('d/m/Y') }}</div>
+                            </div>
+                            <div class="text-end">
+                                <div class="table-card-item-label">Jam</div>
+                                <div class="table-card-item-value">{{ $reservasi->jam ?? '-' }}</div>
+                            </div>
+                        </div>
+
+                        {{-- Pembayaran --}}
+                        <div class="table-card-item-row">
+                            <span class="table-card-item-label">Pembayaran</span>
+                            <span class="table-card-item-value">{{ ucfirst($reservasi->payment_method ?? '-') }}</span>
+                        </div>
+
+                        {{-- Status Bayar --}}
+                        <div class="table-card-item-row">
+                            <span class="table-card-item-label">Status Bayar</span>
+                            <span data-payment-badge>
+                                <span class="badge rounded-pill text-bg-{{ $paymentBadge[0] }}">
+                                    <i class="fas {{ $paymentBadge[1] }} me-1"></i>{{ $paymentBadge[2] }}
+                                </span>
+                            </span>
+                        </div>
+
+                        {{-- Nomor Antrian --}}
+                        <div class="table-card-item-row">
+                            <span class="table-card-item-label">No. Antrian</span>
+                            <span class="table-card-item-value" data-queue-value>{{ $reservasi->queue?->nomor_antrian ?? '-' }}</span>
+                        </div>
+
+                        {{-- Status Reservasi --}}
+                        <div class="table-card-item-row">
+                            <span class="table-card-item-label">Status Reservasi</span>
+                            <span data-status-badge>
+                                <span class="badge rounded-pill text-bg-{{ $reservationBadge[0] }}">
+                                    <i class="fas {{ $reservationBadge[1] }} me-1"></i>{{ $reservationBadge[2] }}
+                                </span>
+                            </span>
+                        </div>
+
+                        {{-- Aksi --}}
+                        <div class="table-card-item-footer">
+                            <a
+                                href="{{ route('reservasi.show', $reservasi->id) }}"
+                                class="btn btn-info btn-sm text-white w-100"
+                            >
+                                <i class="fas fa-eye me-1"></i> Detail
+                            </a>
+
+                            <form
+                                action="{{ route('reservasi.destroy', $reservasi->id) }}"
+                                method="POST"
+                                onsubmit="return confirm('Apakah Anda yakin ingin membatalkan reservasi ini?')"
+                                class="mb-0 {{ $reservationStatus === 'pending' ? '' : 'd-none' }}"
+                                data-batalkan-form
+                            >
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-danger btn-sm w-100">
+                                    <i class="fas fa-times me-1"></i> Batalkan
+                                </button>
+                            </form>
+                        </div>
+
+                    </div>
+                @endforeach
             </div>
         @endif
     </div>
 
-</body>
-</html>
+    {{--
+        Polling status reservasi: baris tabel & card (desktop maupun
+        mobile) di-refresh otomatis tiap 20 detik lewat endpoint JSON
+        reservasi.statusUpdates, supaya begitu admin mengonfirmasi/
+        mengubah status reservasi, badge status bayar, status reservasi,
+        nomor antrian, dan tombol "Batalkan" ikut berubah di sini tanpa
+        pelanggan perlu reload halaman. Interval disimpan di window
+        supaya tidak dobel kalau script ini disisipkan ulang lewat
+        navigasi AJAX (lihat layouts/navigation.blade.php) - nama
+        variabelnya sama dengan yang dipakai di dashboard.blade.php,
+        supaya cuma satu polling yang aktif sesuai halaman mana yang
+        sedang tampil.
+    --}}
+    <script>
+        (function () {
+            var statusUrl = '{{ route('reservasi.statusUpdates') }}';
+
+            var paymentBadgeMap = {
+                unpaid: ['danger', 'fa-exclamation-circle', 'Belum Bayar'],
+                waiting_verification: ['warning', 'fa-clock', 'Menunggu Verifikasi'],
+                paid: ['success', 'fa-check-circle', 'Lunas'],
+                rejected: ['danger', 'fa-times-circle', 'Ditolak'],
+            };
+
+            var statusBadgeMap = {
+                pending: ['warning', 'fa-clock', 'Pending'],
+                confirmed: ['info', 'fa-check', 'Dikonfirmasi'],
+                sedang_dilayani: ['primary', 'fa-scissors', 'Sedang Dilayani'],
+                done: ['success', 'fa-check-double', 'Selesai'],
+                cancelled: ['danger', 'fa-times', 'Dibatalkan'],
+            };
+
+            function badgeHtml(map, key) {
+                var label = key ? key.charAt(0).toUpperCase() + key.slice(1) : '-';
+                var info = map[key] || ['secondary', 'fa-info-circle', label];
+
+                return '<span class="badge rounded-pill text-bg-' + info[0] + '">' +
+                    '<i class="fas ' + info[1] + ' me-1"></i>' + info[2] +
+                    '</span>';
+            }
+
+            function refreshReservasiSaya() {
+                fetch(statusUrl, {
+                    headers: { 'Accept': 'application/json' },
+                    credentials: 'same-origin',
+                })
+                    .then(function (response) {
+                        if (!response.ok) {
+                            throw new Error('Gagal memuat status reservasi');
+                        }
+                        return response.json();
+                    })
+                    .then(function (payload) {
+                        payload.reservations.forEach(function (item) {
+                            document.querySelectorAll('[data-reservasi-id="' + item.id + '"]').forEach(function (row) {
+                                var paymentEl = row.querySelector('[data-payment-badge]');
+                                if (paymentEl) {
+                                    paymentEl.innerHTML = badgeHtml(paymentBadgeMap, item.payment_status);
+                                }
+
+                                var statusEl = row.querySelector('[data-status-badge]');
+                                if (statusEl) {
+                                    statusEl.innerHTML = badgeHtml(statusBadgeMap, item.status);
+                                }
+
+                                var queueEl = row.querySelector('[data-queue-value]');
+                                if (queueEl) {
+                                    queueEl.textContent = item.nomor_antrian || '-';
+                                }
+
+                                var batalkanForm = row.querySelector('[data-batalkan-form]');
+                                if (batalkanForm) {
+                                    batalkanForm.classList.toggle('d-none', item.status !== 'pending');
+                                }
+                            });
+                        });
+                    })
+                    .catch(function () {
+                        // Diamkan saja - coba lagi di polling berikutnya.
+                    });
+            }
+
+            if (window.__reservasiPollInterval) {
+                clearInterval(window.__reservasiPollInterval);
+            }
+            window.__reservasiPollInterval = setInterval(refreshReservasiSaya, 20000);
+        })();
+    </script>
+</x-app-layout>

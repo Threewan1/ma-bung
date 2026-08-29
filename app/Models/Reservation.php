@@ -15,6 +15,9 @@ class Reservation extends Model
         // ID layanan yang dipilih
         'service_id',
 
+        // ID barber yang dipilih pelanggan (nullable)
+        'barber_id',
+
         // Tanggal reservasi
         'tanggal',
 
@@ -30,11 +33,24 @@ class Reservation extends Model
         // metode pembayaran
         'payment_method',
 
+        // Channel pembayaran online (qris, bca, dana, gopay, shopeepay)
+        'payment_channel',
+
         // Lokasi file bukti pembayaran
         'payment_proof',
 
         // Status pembayaran
         'payment_status',
+
+        // Rating bintang 1-5 dari pelanggan
+        'rating',
+
+        // Ulasan/komentar dari pelanggan
+        'review',
+
+        // Foto before/after (diisi admin untuk reservasi yang sudah selesai)
+        'foto_before',
+        'foto_after',
     ];
 
     public function user()
@@ -45,6 +61,11 @@ class Reservation extends Model
     public function service()
     {
         return $this->belongsTo(Service::class);
+    }
+
+    public function barber()
+    {
+        return $this->belongsTo(Barber::class);
     }
 
     public function queue()

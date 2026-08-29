@@ -23,7 +23,9 @@ class User extends Authenticatable
         'email',
         'password',
         'no_hp',
+        'avatar',
         'role',
+        'tanggal_lahir',
     ];
 
     /**
@@ -46,10 +48,17 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'tanggal_lahir' => 'date',
         ];
     }
     public function reservations()
     {
         return $this->hasMany(Reservation::class);
+    }
+
+    // Data barber terkait, kalau akun ini role-nya 'barber'
+    public function barber()
+    {
+        return $this->hasOne(Barber::class);
     }
 }

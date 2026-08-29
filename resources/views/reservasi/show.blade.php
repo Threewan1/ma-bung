@@ -1,113 +1,211 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detail Reservasi - Ma'bung Barbershop</title>
-    <!-- Tailwind CSS via CDN untuk styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome untuk icon -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body class="bg-gray-900 text-white">
-
-    {{-- Navbar --}}
-    <nav class="bg-gray-800 shadow-lg fixed w-full z-50">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <div class="text-2xl font-bold text-yellow-400">
-                <i class="fas fa-cut"></i> Ma'bung Barbershop
-            </div>
-            <div class="space-x-4">
-                <a href="/dashboard" class="text-white hover:text-yellow-400">Dashboard</a>
-                {{-- Form logout menggunakan method POST --}}
-                <form method="POST" action="/logout" class="inline">
-                    @csrf {{-- Token keamanan Laravel --}}
-                    <button type="submit" class="text-white hover:text-yellow-400">Logout</button>
-                </form>
-            </div>
-        </div>
-    </nav>
-
-    {{-- Konten Utama --}}
-    <div class="max-w-2xl mx-auto pt-24 pb-10 px-4">
-        <h2 class="text-2xl font-bold text-yellow-400 mb-6">
+<x-app-layout>
+    <div class="container" style="max-width: 550px; padding-top: 1.1rem; padding-bottom: 1.25rem;">
+        <h2 class="fs-4 fw-bold text-gold mb-3">
             <i class="fas fa-info-circle"></i> Detail Reservasi
         </h2>
 
-        <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+        <div class="bg-panel px-4 py-2 rounded-3 shadow">
 
             {{-- Tampilkan nomor antrian jika ada --}}
             @if($reservasi->queue)
-            <div class="text-center mb-6">
-                <p class="text-gray-400 mb-2">Nomor Antrian Kamu</p>
-                {{-- Tampilkan nomor antrian dengan ukuran besar --}}
-                <span class="text-6xl font-bold text-yellow-400">
+            <div class="text-center mb-3">
+                <p class="text-body-secondary small mb-1">Nomor Antrian Kamu</p>
+                {{-- Tampilkan nomor antrian --}}
+                <span class="fs-1 fw-bold text-gold">
                     #{{ $reservasi->queue->nomor_antrian }}
                 </span>
             </div>
             @endif
 
             {{-- Detail informasi reservasi --}}
-            <div class="space-y-4">
+            <div class="d-flex flex-column">
 
                 {{-- Nama layanan yang dipilih --}}
-                <div class="flex justify-between border-b border-gray-700 pb-3">
-                    <span class="text-gray-400">Layanan</span>
-                    <span class="font-bold">{{ $reservasi->service->nama_layanan }}</span>
+                <div class="d-flex justify-content-between border-bottom border-secondary-subtle reservasi-detail-row">
+                    <span class="text-body-secondary">Layanan</span>
+                    <span class="fw-bold">{{ $reservasi->service->nama_layanan }}</span>
+                </div>
+
+                {{-- Barber yang dipilih --}}
+                <div class="d-flex justify-content-between border-bottom border-secondary-subtle reservasi-detail-row">
+                    <span class="text-body-secondary">Barber</span>
+                    <span class="fw-bold">{{ $reservasi->barber->nama ?? '-' }}</span>
                 </div>
 
                 {{-- Harga layanan dengan format rupiah --}}
-                <div class="flex justify-between border-b border-gray-700 pb-3">
-                    <span class="text-gray-400">Harga</span>
-                    <span class="font-bold text-yellow-400">
+                <div class="d-flex justify-content-between border-bottom border-secondary-subtle reservasi-detail-row">
+                    <span class="text-body-secondary">Harga</span>
+                    <span class="fw-bold text-gold">
                         Rp {{ number_format($reservasi->service->harga, 0, ',', '.') }}
                     </span>
                 </div>
 
                 {{-- Tanggal reservasi --}}
-                <div class="flex justify-between border-b border-gray-700 pb-3">
-                    <span class="text-gray-400">Tanggal</span>
-                    <span class="font-bold">{{ $reservasi->tanggal }}</span>
+                <div class="d-flex justify-content-between border-bottom border-secondary-subtle reservasi-detail-row">
+                    <span class="text-body-secondary">Tanggal</span>
+                    <span class="fw-bold">{{ $reservasi->tanggal }}</span>
                 </div>
 
                 {{-- Jam reservasi --}}
-                <div class="flex justify-between border-b border-gray-700 pb-3">
-                    <span class="text-gray-400">Jam</span>
-                    <span class="font-bold">{{ $reservasi->jam }}</span>
+                <div class="d-flex justify-content-between border-bottom border-secondary-subtle reservasi-detail-row">
+                    <span class="text-body-secondary">Jam</span>
+                    <span class="fw-bold">{{ $reservasi->jam }}</span>
                 </div>
 
                 {{-- Catatan dari pelanggan, jika kosong tampilkan tanda - --}}
-                <div class="flex justify-between border-b border-gray-700 pb-3">
-                    <span class="text-gray-400">Catatan</span>
-                    <span class="font-bold">{{ $reservasi->catatan ?? '-' }}</span>
+                <div class="d-flex justify-content-between border-bottom border-secondary-subtle reservasi-detail-row">
+                    <span class="text-body-secondary">Catatan</span>
+                    <span class="fw-bold">{{ $reservasi->catatan ?? '-' }}</span>
+                </div>
+
+                {{-- =============================== --}}
+                {{-- METODE PEMBAYARAN --}}
+                {{-- =============================== --}}
+                <div class="d-flex justify-content-between border-bottom border-secondary-subtle reservasi-detail-row">
+                    <span class="text-body-secondary">Metode Pembayaran</span>
+
+                    <span class="fw-bold">
+                        {{ ucfirst($reservasi->payment_method ?? '-') }}
+                    </span>
+                </div>
+
+                {{-- =============================== --}}
+                {{-- STATUS PEMBAYARAN --}}
+                {{-- =============================== --}}
+                <div class="d-flex justify-content-between border-bottom border-secondary-subtle reservasi-detail-row">
+
+                    <span class="text-body-secondary">Status Pembayaran</span>
+
+                    @php
+                        $paymentStatus = strtolower($reservasi->payment_status ?? 'unpaid');
+                    @endphp
+
+                    @if($paymentStatus == 'unpaid')
+
+                        <span class="badge text-bg-danger">
+                            Belum Bayar
+                        </span>
+
+                    @elseif($paymentStatus == 'waiting_verification')
+
+                        <span class="badge text-bg-warning">
+                            Menunggu Verifikasi
+                        </span>
+
+                    @elseif(in_array($paymentStatus, ['paid','success','settlement']))
+
+                        <span class="badge text-bg-success">
+                            Lunas
+                        </span>
+
+                    @elseif(in_array($paymentStatus, ['rejected','failed','deny','cancel','expired']))
+
+                        <span class="badge text-bg-danger">
+                            Ditolak
+                        </span>
+
+                    @else
+
+                        <span class="badge text-bg-secondary">
+                            {{ ucfirst($paymentStatus) }}
+                        </span>
+
+                    @endif
+
                 </div>
 
                 {{-- Status reservasi dengan warna berbeda --}}
-                <div class="flex justify-between">
-                    <span class="text-gray-400">Status</span>
+                <div class="d-flex justify-content-between">
+                    <span class="text-body-secondary">Status</span>
                     @if($reservasi->status == 'pending')
-                        {{-- Biru = menunggu konfirmasi --}}
-                        <span class="bg-blue-500 text-white px-3 py-1 rounded">Pending</span>
+                        {{-- Kuning = menunggu konfirmasi --}}
+                        <span class="badge text-bg-warning">Pending</span>
                     @elseif($reservasi->status == 'confirmed')
-                        {{-- Hijau = sudah dikonfirmasi admin --}}
-                        <span class="bg-green-500 text-white px-3 py-1 rounded">Confirmed</span>
+                        {{-- Biru = sudah dikonfirmasi admin --}}
+                        <span class="badge text-bg-info">Dikonfirmasi</span>
+                    @elseif($reservasi->status == 'sedang_dilayani')
+                        {{-- Gold = sedang dikerjakan barber --}}
+                        <span class="badge text-bg-primary">Sedang Dilayani</span>
                     @elseif($reservasi->status == 'cancelled')
                         {{-- Merah = dibatalkan --}}
-                        <span class="bg-red-500 text-white px-3 py-1 rounded">Cancelled</span>
+                        <span class="badge text-bg-danger">Dibatalkan</span>
                     @elseif($reservasi->status == 'done')
-                        {{-- Abu-abu = sudah selesai --}}
-                        <span class="bg-gray-500 text-white px-3 py-1 rounded">Selesai</span>
+                        {{-- Hijau = sudah selesai --}}
+                        <span class="badge text-bg-success">Selesai</span>
                     @endif
                 </div>
             </div>
 
-            {{-- Tombol kembali ke daftar reservasi --}}
-            <a href="/reservasi"
-                class="block text-center mt-6 bg-yellow-400 text-gray-900 py-2 rounded-lg font-bold hover:bg-yellow-500">
-                <i class="fas fa-arrow-left"></i> Kembali ke Daftar Reservasi
+            {{-- ========================================= --}}
+            {{-- BUKTI PEMBAYARAN --}}
+            {{-- Hanya untuk metode pembayaran Online -      --}}
+            {{-- ========================================= --}}
+
+            @if($reservasi->payment_method == 'online')
+
+                {{-- Jika bukti pembayaran sudah ada --}}
+                @if($reservasi->payment_proof)
+
+                    <div class="mt-3">
+
+                        <p class="text-body-secondary small mb-1">
+                            Bukti Pembayaran
+                        </p>
+
+                        <img
+                            src="{{ asset('storage/' . $reservasi->payment_proof) }}"
+                            alt="Bukti Pembayaran"
+                            class="rounded-3 border w-100"
+                            style="max-height: 20rem; object-fit: contain;"
+                        >
+
+                    </div>
+
+                @else
+
+                    {{-- Form upload bukti pembayaran --}}
+                    <form
+                        action="{{ route('reservasi.uploadBukti', $reservasi->id) }}"
+                        method="POST"
+                        enctype="multipart/form-data"
+                        class="mt-3"
+                    >
+
+                        @csrf
+
+                        <label class="form-label text-body-secondary small mb-1">
+                            Upload Bukti Pembayaran
+                        </label>
+
+                        <input
+                            type="file"
+                            name="payment_proof"
+                            accept="image/*"
+                            required
+                            class="form-control"
+                        >
+
+                        <button
+                            type="submit"
+                            class="btn btn-success w-100 mt-2"
+                        >
+                            <i class="fas fa-upload"></i>
+                            Upload Bukti Pembayaran
+                        </button>
+
+                    </form>
+
+                @endif
+
+            @endif
+
+            {{-- Tombol kembali --}}
+            <a href="{{ route('reservasi.index') }}" class="btn btn-primary w-100 mt-3">
+
+                <i class="fas fa-arrow-left"></i>
+                Kembali ke Daftar Reservasi
+
             </a>
         </div>
     </div>
-
-</body>
-</html>
+</x-app-layout>

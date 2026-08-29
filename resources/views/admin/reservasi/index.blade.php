@@ -1,120 +1,295 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kelola Reservasi - Ma'bung Barbershop</title>
-    <!-- Tailwind CSS via CDN untuk styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome untuk icon -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body class="bg-gray-900 text-white">
+<x-admin-layout title="Kelola Reservasi">
 
-    {{-- Navbar Admin --}}
-    <nav class="bg-gray-800 shadow-lg fixed w-full z-50">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <div class="text-2xl font-bold text-yellow-400">
-                <i class="fas fa-cut"></i> Ma'bung Barbershop - Admin
-            </div>
-            <div class="space-x-4">
-                <a href="/admin" class="text-white hover:text-yellow-400">Dashboard</a>
-                <a href="/admin/layanan" class="text-white hover:text-yellow-400">Layanan</a>
-                <a href="/admin/reservasi" class="text-yellow-400 font-bold">Reservasi</a>
-                <a href="/admin/antrian" class="text-white hover:text-yellow-400">Antrian</a>
-                <form method="POST" action="/logout" class="inline">
-                    @csrf
-                    <button type="submit" class="text-white hover:text-yellow-400">Logout</button>
-                </form>
-            </div>
+    <h2 class="fs-2 fw-bold text-gold mb-4">
+        <i class="fas fa-calendar-check"></i> Kelola Reservasi
+    </h2>
+
+    {{-- Pesan Sukses --}}
+    @if(session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
         </div>
-    </nav>
+    @endif
 
-    {{-- Konten --}}
-    <div class="max-w-7xl mx-auto pt-24 pb-10 px-4">
-        <h2 class="text-2xl font-bold text-yellow-400 mb-6">
-            <i class="fas fa-calendar-check"></i> Kelola Reservasi
-        </h2>
+    {{--
+        Reservasi dipisah per status jadi TAB (bukan satu tabel besar
+        campur semua status) supaya admin tidak perlu menyisir satu-satu
+        untuk membedakan mana yang masih perlu ditindak (Menunggu
+        Konfirmasi) dan mana yang sudah beres (Selesai). "Menunggu
+        Konfirmasi" aktif secara default karena itu yang paling butuh
+        perhatian admin duluan - kecuali datang dari card "Perlu
+        Verifikasi Pembayaran" di dashboard admin (?tab=verifikasi),
+        yang langsung membuka tab itu.
 
-        {{-- Pesan Sukses --}}
-        @if(session('success'))
-            <div class="bg-green-500 text-white p-3 rounded-lg mb-4">
-                {{ session('success') }}
-            </div>
-        @endif
-
-        {{-- Tabel Reservasi --}}
-        <div class="bg-gray-800 rounded-lg overflow-hidden">
-            <table class="w-full">
-                <thead class="bg-gray-700">
-                    <tr>
-                        <th class="px-4 py-3 text-left">No</th>
-                        <th class="px-4 py-3 text-left">Pelanggan</th>
-                        <th class="px-4 py-3 text-left">Layanan</th>
-                        <th class="px-4 py-3 text-left">Tanggal</th>
-                        <th class="px-4 py-3 text-left">Jam</th>
-                        <th class="px-4 py-3 text-left">No. Antrian</th>
-                        <th class="px-4 py-3 text-left">Status</th>
-                        <th class="px-4 py-3 text-left">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{-- Loop semua data reservasi --}}
-                    @forelse($reservations as $index => $reservasi)
-                    <tr class="border-t border-gray-700">
-                        <td class="px-4 py-3">{{ $index + 1 }}</td>
-                        <td class="px-4 py-3">{{ $reservasi->user->name }}</td>
-                        <td class="px-4 py-3">{{ $reservasi->service->nama_layanan }}</td>
-                        <td class="px-4 py-3">{{ $reservasi->tanggal }}</td>
-                        <td class="px-4 py-3">{{ $reservasi->jam }}</td>
-                        <td class="px-4 py-3">
-                            @if($reservasi->queue)
-                                <span class="bg-yellow-400 text-gray-900 px-3 py-1 rounded-full font-bold">
-                                    #{{ $reservasi->queue->nomor_antrian }}
-                                </span>
-                            @else
-                                -
-                            @endif
-                        </td>
-                        <td class="px-4 py-3">
-                            {{-- Form update status reservasi --}}
-                            <form method="POST" action="/admin/reservasi/{{ $reservasi->id }}">
-                                @csrf
-                                @method('PUT')
-                                <select name="status" onchange="this.form.submit()"
-                                    class="bg-gray-700 text-white px-2 py-1 rounded text-sm">
-                                    <option value="pending" {{ $reservasi->status == 'pending' ? 'selected' : '' }}>Pending</option>
-                                    <option value="confirmed" {{ $reservasi->status == 'confirmed' ? 'selected' : '' }}>Confirmed</option>
-                                    <option value="cancelled" {{ $reservasi->status == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
-                                    <option value="done" {{ $reservasi->status == 'done' ? 'selected' : '' }}>Selesai</option>
-                                </select>
-                            </form>
-                        </td>
-                        <td class="px-4 py-3">
-                            {{-- Tombol Hapus --}}
-                            <form method="POST" action="/admin/reservasi/{{ $reservasi->id }}" class="inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit"
-                                    onclick="return confirm('Yakin ingin menghapus reservasi ini?')"
-                                    class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm">
-                                    <i class="fas fa-trash"></i> Hapus
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                    @empty
-                    {{-- Tampilkan pesan jika belum ada reservasi --}}
-                    <tr>
-                        <td colspan="8" class="px-4 py-6 text-center text-gray-400">
-                            Belum ada reservasi
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+        Dibungkus #reservasi-tab-content-wrapper supaya bisa dirender
+        ulang lewat AJAX (polling) - begitu barber mengubah status
+        pelayanan atau admin sendiri mengonfirmasi pembayaran, tab &
+        tabel di sini ikut ter-update tanpa reload halaman penuh (lihat
+        script di bagian bawah).
+    --}}
+    <div id="reservasi-tab-content-wrapper">
+        @include('admin.reservasi._tab-content')
     </div>
 
-</body>
-</html>
+    {{-- ========================================================= --}}
+    {{-- MODAL BUKTI PEMBAYARAN                                     --}}
+    {{-- Sengaja dirender di luar <table> (bukan di dalam <td>),    --}}
+    {{-- karena menaruh .modal di dalam struktur tabel adalah       --}}
+    {{-- anti-pattern yang bisa bikin perilaku modal tidak stabil.  --}}
+    {{-- ========================================================= --}}
+    @foreach($reservations as $reservasi)
+        @continue(! ($reservasi->payment_method === 'online' && $reservasi->payment_proof))
+        @php
+            $paymentStatus = $reservasi->payment_status ?? 'unpaid';
+        @endphp
+
+        <div class="modal fade" id="buktiModal{{ $reservasi->id }}" tabindex="-1" aria-labelledby="buktiModal{{ $reservasi->id }}Label" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content bg-panel">
+                    <div class="modal-header border-secondary-subtle">
+                        <h5 class="modal-title text-gold" id="buktiModal{{ $reservasi->id }}Label">
+                            Bukti Pembayaran - {{ $reservasi->user->name }}
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                    </div>
+
+                    <div class="modal-body text-center modal-bukti-body">
+                        <img
+                            src="{{ asset('storage/' . $reservasi->payment_proof) }}"
+                            alt="Bukti pembayaran {{ $reservasi->user->name }}"
+                            class="img-fluid rounded-3 mb-3"
+                        >
+
+                        <p class="text-body-secondary small mb-0">
+                            Channel: {{ strtoupper($reservasi->payment_channel ?? '-') }}
+                        </p>
+                    </div>
+
+                    <div class="modal-footer border-secondary-subtle">
+                        @if($paymentStatus !== 'paid')
+                            <form method="POST" action="{{ route('admin.reservasi.updatePaymentStatus', $reservasi->id) }}" class="mb-0">
+                                @csrf
+                                @method('PATCH')
+                                <input type="hidden" name="payment_status" value="paid">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-check"></i> Konfirmasi Pembayaran
+                                </button>
+                            </form>
+                        @endif
+
+                        @if($paymentStatus !== 'rejected')
+                            <form
+                                method="POST"
+                                action="{{ route('admin.reservasi.updatePaymentStatus', $reservasi->id) }}"
+                                class="mb-0"
+                                onsubmit="return confirm('Yakin ingin menolak bukti pembayaran ini?')"
+                            >
+                                @csrf
+                                @method('PATCH')
+                                <input type="hidden" name="payment_status" value="rejected">
+                                <button type="submit" class="btn btn-outline-danger">
+                                    <i class="fas fa-times"></i> Tolak
+                                </button>
+                            </form>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endforeach
+
+    {{-- ========================================================= --}}
+    {{-- MODAL UPLOAD FOTO BEFORE & AFTER (transformasi)            --}}
+    {{-- Hanya dirender untuk reservasi yang sudah berstatus         --}}
+    {{-- "done", di luar struktur tabel (sama seperti modal bukti    --}}
+    {{-- pembayaran di atas).                                        --}}
+    {{-- ========================================================= --}}
+    @foreach($reservations as $reservasi)
+        @continue($reservasi->status !== 'done')
+
+        <div class="modal fade" id="transformasiModal{{ $reservasi->id }}" tabindex="-1" aria-labelledby="transformasiModal{{ $reservasi->id }}Label" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content bg-panel">
+                    <form method="POST" action="{{ route('admin.reservasi.uploadTransformasi', $reservasi->id) }}" enctype="multipart/form-data">
+                        @csrf
+
+                        <div class="modal-header border-secondary-subtle">
+                            <h5 class="modal-title text-gold" id="transformasiModal{{ $reservasi->id }}Label">
+                                Foto Before &amp; After - {{ $reservasi->user->name }}
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                        </div>
+
+                        <div class="modal-body">
+                            <div class="row g-3">
+                                <div class="col-6">
+                                    <label class="form-label small text-body-secondary">Foto Before</label>
+                                    @if($reservasi->foto_before)
+                                        <img src="{{ asset('storage/' . $reservasi->foto_before) }}" class="img-fluid rounded-3 mb-2" alt="Foto before {{ $reservasi->user->name }}">
+                                    @endif
+                                    <input type="file" name="foto_before" accept="image/*" class="form-control form-control-sm">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small text-body-secondary">Foto After</label>
+                                    @if($reservasi->foto_after)
+                                        <img src="{{ asset('storage/' . $reservasi->foto_after) }}" class="img-fluid rounded-3 mb-2" alt="Foto after {{ $reservasi->user->name }}">
+                                    @endif
+                                    <input type="file" name="foto_after" accept="image/*" class="form-control form-control-sm">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer border-secondary-subtle">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-upload"></i> Simpan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    @endforeach
+
+    {{--
+        Live-sync: begitu barber mengubah status pelayanan (Sedang
+        Dilayani/Selesai) di halamannya sendiri, atau admin mengonfirmasi
+        pembayaran, tab & tabel di halaman ini ikut ter-update otomatis
+        tanpa reload - dengan cara poll endpoint JSON ringan tiap 15 detik
+        (cuma id+status+payment_status semua reservasi, murah), dan HANYA
+        kalau ada yang benar-benar berubah, ambil ulang HTML tab (partial
+        _tab-content.blade.php yang sama dipakai render awal) lalu ganti
+        isi wrapper-nya - supaya reservasi otomatis pindah ke tab status
+        yang benar & badge Bukti Bayar/dst selalu akurat, bukan cuma
+        tempelan update sebagian. Tab & filter metode pembayaran yang
+        sedang aktif diingat dulu sebelum diganti, lalu diterapkan lagi
+        setelahnya supaya admin tidak "terlempar" balik ke tab default.
+    --}}
+    <script>
+        (function () {
+            var statusUrl = '{{ route('admin.reservasi.statusUpdates') }}';
+            var tabContentUrl = '{{ route('admin.reservasi.tabContent') }}';
+            var wrapper = document.getElementById('reservasi-tab-content-wrapper');
+            var lastSignature = null;
+
+            if (!wrapper) {
+                return;
+            }
+
+            function pasangListenerFilter() {
+                var filterSelect = document.getElementById('payment-filter-select');
+                var container = document.getElementById('reservasiStatusTabContent');
+
+                if (filterSelect && container) {
+                    filterSelect.addEventListener('change', function () {
+                        container.setAttribute('data-payment-filter', this.value);
+                    });
+                }
+            }
+
+            function ambilStateAktif() {
+                var activeTabPane = wrapper.querySelector('.tab-pane.active');
+                var activeTabBtn = wrapper.querySelector('.admin-reservasi-tabs .nav-link.active');
+                var paymentFilter = document.getElementById('payment-filter-select');
+
+                return {
+                    tabPaneId: activeTabPane ? activeTabPane.id : null,
+                    tabBtnId: activeTabBtn ? activeTabBtn.id : null,
+                    paymentFilterValue: paymentFilter ? paymentFilter.value : 'all',
+                };
+            }
+
+            function terapkanStateAktif(state) {
+                wrapper.querySelectorAll('.admin-reservasi-tabs .nav-link').forEach(function (btn) {
+                    btn.classList.remove('active');
+                    btn.setAttribute('aria-selected', 'false');
+                });
+                wrapper.querySelectorAll('.tab-pane').forEach(function (pane) {
+                    pane.classList.remove('show', 'active');
+                });
+
+                if (state.tabBtnId) {
+                    var btn = document.getElementById(state.tabBtnId);
+                    if (btn) {
+                        btn.classList.add('active');
+                        btn.setAttribute('aria-selected', 'true');
+                    }
+                }
+
+                if (state.tabPaneId) {
+                    var pane = document.getElementById(state.tabPaneId);
+                    if (pane) {
+                        pane.classList.add('show', 'active');
+                    }
+                }
+
+                var filterSelect = document.getElementById('payment-filter-select');
+                var container = document.getElementById('reservasiStatusTabContent');
+
+                if (filterSelect) {
+                    filterSelect.value = state.paymentFilterValue;
+                }
+                if (container) {
+                    container.setAttribute('data-payment-filter', state.paymentFilterValue);
+                }
+
+                pasangListenerFilter();
+            }
+
+            function muatUlangTabContent() {
+                var state = ambilStateAktif();
+
+                fetch(tabContentUrl, {
+                    headers: {
+                        'Accept': 'text/html',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    credentials: 'same-origin',
+                })
+                    .then(function (response) {
+                        if (!response.ok) {
+                            throw new Error('Gagal memuat data terbaru');
+                        }
+                        return response.text();
+                    })
+                    .then(function (html) {
+                        wrapper.innerHTML = html;
+                        terapkanStateAktif(state);
+                    })
+                    .catch(function () {
+                        // Diamkan saja - coba lagi di polling berikutnya.
+                    });
+            }
+
+            function cekPerubahan() {
+                fetch(statusUrl, {
+                    headers: { 'Accept': 'application/json' },
+                    credentials: 'same-origin',
+                })
+                    .then(function (response) {
+                        if (!response.ok) {
+                            throw new Error('Gagal memuat status terbaru');
+                        }
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        if (lastSignature === null) {
+                            lastSignature = data.signature;
+                            return;
+                        }
+
+                        if (data.signature !== lastSignature) {
+                            lastSignature = data.signature;
+                            muatUlangTabContent();
+                        }
+                    })
+                    .catch(function () {
+                        // Diamkan saja - coba lagi di polling berikutnya.
+                    });
+            }
+
+            pasangListenerFilter();
+            setInterval(cekPerubahan, 15000);
+        })();
+    </script>
+
+</x-admin-layout>

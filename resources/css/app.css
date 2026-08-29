@@ -1,3 +1,1 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Styling is now handled by Bootstrap 5 + public/css/theme.css, loaded via CDN in each Blade layout. */
