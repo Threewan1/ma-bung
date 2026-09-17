@@ -1,12 +1,7 @@
 @props(['title' => 'Admin'])
 
 @php
-    // Jumlah reservasi berstatus "pending" - dipakai badge notifikasi
-    // di menu sidebar "Reservasi". Dihitung di sini (bukan lewat
-    // controller) karena admin-layout dipakai bersama oleh semua
-    // halaman admin, jadi datanya harus selalu tersedia terlepas dari
-    // controller mana yang merender halamannya - pola yang sama dipakai
-    // navigation.blade.php di sisi pelanggan untuk data offcanvas profil.
+    // Dihitung di sini (bukan controller) karena layout ini dipakai bersama semua halaman admin.
     $adminReservasiPendingCount = \App\Models\Reservation::where('status', 'pending')->count();
 @endphp
 
@@ -16,6 +11,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $title }} - Ma'bung Barbershop</title>
+    <link rel="icon" type="image/jpeg" href="{{ asset('images/logo.jpeg') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/theme.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -26,7 +22,7 @@
     {{-- Topbar mobile: hanya tampil di layar kecil, berisi tombol hamburger --}}
     <nav class="admin-mobile-topbar d-flex d-lg-none align-items-center justify-content-between px-3">
         <button
-            class="btn btn-link text-white p-1"
+            class="btn btn-link text-white p-1 btn-hamburger-touch"
             type="button"
             data-bs-toggle="offcanvas"
             data-bs-target="#adminSidebar"
@@ -36,8 +32,11 @@
             <i class="bi bi-list fs-3"></i>
         </button>
 
-        <span class="fw-bold text-gold">
-            <i class="fas fa-cut"></i> Ma'bung Barbershop
+        <span class="fw-bold text-gold d-flex align-items-center gap-2">
+            <span class="brand-logo brand-logo-sm">
+                <img src="{{ asset('images/logo.jpeg') }}" alt="Logo Ma'bung Barbershop">
+            </span>
+            <span class="navbar-brand-text">Ma'bung Barbershop</span>
         </span>
 
         <span style="width: 2rem;"></span>
@@ -51,7 +50,12 @@
         aria-labelledby="adminSidebarLabel"
     >
         <div class="offcanvas-header border-bottom border-secondary-subtle d-lg-none">
-            <h5 class="offcanvas-title text-gold" id="adminSidebarLabel">Ma'bung Barbershop</h5>
+            <h5 class="offcanvas-title text-gold d-flex align-items-center gap-2" id="adminSidebarLabel">
+                <span class="brand-logo brand-logo-sm">
+                    <img src="{{ asset('images/logo.jpeg') }}" alt="Logo Ma'bung Barbershop">
+                </span>
+                Ma'bung Barbershop
+            </h5>
             <button
                 type="button"
                 class="btn-close btn-close-white"
@@ -65,7 +69,9 @@
 
             {{-- Brand, hanya tampil di sidebar desktop (mobile sudah ada di offcanvas-header) --}}
             <div class="d-none d-lg-flex align-items-center gap-2 px-3 py-4 border-bottom border-secondary-subtle">
-                <i class="fas fa-cut text-gold fs-4"></i>
+                <span class="brand-logo brand-logo-lg">
+                    <img src="{{ asset('images/logo.jpeg') }}" alt="Logo Ma'bung Barbershop">
+                </span>
                 <span class="fw-bold text-gold fs-5">Ma'bung Barbershop</span>
             </div>
 
@@ -73,30 +79,25 @@
             <ul class="nav flex-column flex-grow-1 px-2 py-3 gap-1">
                 <li class="nav-item">
                     <a href="{{ route('admin.dashboard') }}" class="admin-nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                        <i class="bi bi-speedometer2"></i> Dashboard
+                        Dashboard
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="{{ route('admin.layanan.index') }}" class="admin-nav-link {{ request()->routeIs('admin.layanan.*') ? 'active' : '' }}">
-                        <i class="bi bi-scissors"></i> Layanan
+                        Layanan
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="{{ route('admin.reservasi.index') }}" class="admin-nav-link justify-content-between {{ request()->routeIs('admin.reservasi.*') ? 'active' : '' }}">
-                        <span><i class="bi bi-calendar-check"></i> Reservasi</span>
+                        <span>Reservasi</span>
                         @if ($adminReservasiPendingCount > 0)
                             <span class="badge rounded-pill text-bg-warning">{{ $adminReservasiPendingCount }}</span>
                         @endif
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('admin.antrian.index') }}" class="admin-nav-link {{ request()->routeIs('admin.antrian.*') ? 'active' : '' }}">
-                        <i class="bi bi-people"></i> Antrian
-                    </a>
-                </li>
-                <li class="nav-item">
                     <a href="{{ route('admin.barber.index') }}" class="admin-nav-link {{ request()->routeIs('admin.barber.*') ? 'active' : '' }}">
-                        <i class="bi bi-person-badge"></i> Kelola Barber
+                        Kelola Barber
                     </a>
                 </li>
             </ul>

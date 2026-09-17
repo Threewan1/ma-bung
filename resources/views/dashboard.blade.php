@@ -7,14 +7,11 @@
 
     <div class="container pt-5 pb-4 position-relative">
 
-        {{-- =============================================== --}}
-        {{-- UCAPAN ULANG TAHUN --}}
-        {{-- Murni ucapan, tanpa promo/diskon apapun. --}}
-        {{-- =============================================== --}}
+        {{-- UCAPAN ULANG TAHUN, murni ucapan, tanpa promo/diskon apapun. --}}
         @if ($ulangTahunHariIni)
             <div class="member-card member-card-gold rounded-3 p-3 p-md-4 mb-3 text-center fade-in-up">
                 <p class="fs-4 fw-bold mb-1">
-                    🎉 Selamat Ulang Tahun, {{ $user->name }}! 🎉
+                    Selamat Ulang Tahun, {{ $user->name }}!
                 </p>
                 <p class="mb-0">
                     Semoga harimu menyenangkan.
@@ -22,13 +19,10 @@
             </div>
         @endif
 
-        {{-- =============================================== --}}
         {{-- REMINDER: RESERVASI HARI INI / BESOK --}}
-        {{-- =============================================== --}}
         @if ($reservasiSegera)
             <div class="bg-panel card-bordered-gold border-start border-4 border-warning rounded-3 p-3 p-md-4 mb-3 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 fade-in-up">
                 <div class="d-flex align-items-center gap-3">
-                    <i class="fas fa-bell fa-2x text-warning"></i>
                     <div>
                         <h3 class="fs-6 fw-bold mb-1">Reservasi Segera!</h3>
                         <p class="mb-0 text-body-secondary small">
@@ -44,13 +38,10 @@
             </div>
         @endif
 
-        {{-- =============================================== --}}
         {{-- AJAKAN RATING KUNJUNGAN TERAKHIR --}}
-        {{-- =============================================== --}}
         @if ($reservasiPerluRating)
             <div class="bg-panel card-bordered-gold rounded-3 p-3 p-md-4 mb-4 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 fade-in-up">
                 <div class="d-flex align-items-center gap-3">
-                    <i class="fas fa-star fa-2x text-gold"></i>
                     <div>
                         <h3 class="fs-6 fw-bold mb-1">Beri rating untuk kunjungan terakhirmu</h3>
                         <p class="mb-0 text-body-secondary small">
@@ -107,16 +98,7 @@
 
             @if ($errors->has('rating') || $errors->has('review'))
                 <script>
-                    {{--
-                        Dibungkus IIFE dan dijalankan langsung (bukan
-                        menunggu DOMContentLoaded) karena elemen modal-nya
-                        sudah ada di atas script ini saat baris ini
-                        dieksekusi - baik saat page-load biasa maupun saat
-                        disisipkan ulang lewat navigasi AJAX di
-                        layouts/navigation.blade.php (event DOMContentLoaded
-                        cuma terjadi sekali per page-load asli, tidak akan
-                        terpicu lagi saat konten disuntik ulang).
-                    --}}
+                    {{-- Dijalankan langsung (bukan nunggu DOMContentLoaded), soalnya event itu tidak terpicu lagi saat konten disuntik ulang lewat navigasi AJAX. --}}
                     (function () {
                         var modalEl = document.getElementById('ratingModal');
                         if (modalEl) {
@@ -127,13 +109,10 @@
             @endif
         @endif
 
-        {{-- =============================================== --}}
         {{-- REMINDER: PEMBAYARAN ONLINE BELUM SELESAI --}}
-        {{-- =============================================== --}}
         @if ($reservasiPerluBayar)
             <div class="bg-panel card-bordered-gold border-start border-4 border-danger rounded-3 p-3 p-md-4 mb-4 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 fade-in-up">
                 <div class="d-flex align-items-center gap-3">
-                    <i class="fas fa-credit-card fa-2x text-danger"></i>
                     <div>
                         <h3 class="fs-6 fw-bold mb-1">Pembayaran Belum Selesai</h3>
                         <p class="mb-0 text-body-secondary small">
@@ -149,13 +128,10 @@
             </div>
         @endif
 
-        {{-- =============================================== --}}
         {{-- "WAKTUNYA POTONG LAGI!" --}}
-        {{-- =============================================== --}}
         @if ($waktunyaPotongLagi !== null)
             <div class="bg-panel card-bordered-gold border-start border-4 border-gold rounded-3 p-3 p-md-4 mb-4 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 fade-in-up">
                 <div class="d-flex align-items-center gap-3">
-                    <i class="fas fa-scissors fa-2x text-gold"></i>
                     <div>
                         <h3 class="fs-6 fw-bold mb-1">Waktunya Potong Lagi!</h3>
                         <p class="mb-0 text-body-secondary small">
@@ -169,15 +145,13 @@
             </div>
         @endif
 
-        {{-- =============================================== --}}
         {{-- KARTU MEMBER DIGITAL --}}
-        {{-- =============================================== --}}
         <div class="row g-4 mb-4">
             <div class="col-12 col-md-7 col-lg-5">
                 <div class="member-card member-card-{{ $memberLevel }} fade-in-up">
                     <div class="d-flex justify-content-between align-items-start mb-4">
                         <span class="member-card-label">
-                            <i class="fas fa-cut"></i> Ma'Bung Barbershop &mdash; Kartu Member
+                            Ma'Bung Barbershop &mdash; Kartu Member
                         </span>
                         <span class="member-card-level-badge">
                             @if ($memberLevel === 'gold')
@@ -222,9 +196,7 @@
             </div>
         </div>
 
-        {{-- =============================================== --}}
         {{-- RESERVASI TERDEKAT + AKSI CEPAT --}}
-        {{-- =============================================== --}}
         <div class="row g-4">
 
             {{-- Reservasi Terdekat --}}
@@ -235,7 +207,7 @@
                     @if ($reservasiTerdekat) data-reservasi-id="{{ $reservasiTerdekat->id }}" @endif
                 >
                     <h3 class="fs-5 fw-bold mb-3">
-                        <i class="fas fa-calendar-day text-gold"></i> Reservasi Terdekat
+                        Reservasi Terdekat
                     </h3>
 
                     @if ($reservasiTerdekat)
@@ -316,7 +288,6 @@
                         </a>
                     @else
                         <div class="text-center text-body-secondary my-auto py-3">
-                            <i class="fas fa-calendar-times fa-2x mb-3"></i>
                             <p class="mb-0">Belum ada reservasi aktif saat ini.</p>
                         </div>
                     @endif
@@ -327,11 +298,10 @@
             <div class="col-12 col-md-5 col-lg-4">
                 <div class="bg-panel card-bordered-gold card-hover-gold rounded-3 shadow-sm p-4 h-100 d-flex flex-column fade-in-up fade-in-up-2">
                     <h3 class="fs-5 fw-bold mb-3">
-                        <i class="fas fa-bolt text-gold"></i> Aksi Cepat
+                        Aksi Cepat
                     </h3>
 
                     <div class="bg-surface rounded-3 p-3 mb-4 text-center">
-                        <i class="fas fa-check-circle text-gold mb-1"></i>
                         <p class="fs-3 fw-bold text-gold mb-0" data-stat="reservasiSelesaiBulanIni">{{ $reservasiSelesaiBulanIni }}</p>
                         <p class="text-body-secondary small mb-0">reservasi selesai bulan ini</p>
                     </div>
@@ -346,40 +316,38 @@
 
         </div>
 
-        {{-- =============================================== --}}
         {{-- INSPIRASI GAYA + TIPS GROOMING HARIAN --}}
-        {{-- =============================================== --}}
         <div class="row g-4 mt-1">
 
             {{-- Inspirasi Gaya untuk Kamu --}}
             <div class="col-12 col-lg-8">
                 <div class="bg-panel card-bordered-gold rounded-3 shadow-sm p-4 h-100 fade-in-up fade-in-up-3">
                     <h3 class="fs-5 fw-bold mb-3">
-                        <i class="fas fa-wand-magic-sparkles text-gold"></i> Inspirasi Gaya untuk Kamu
+                        Inspirasi Gaya untuk Kamu
                     </h3>
                     <div class="row g-3">
-                        <div class="col-4">
+                        <div class="col-6 col-md-4">
                             <img
-                                src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&q=60"
+                                src="{{ asset('images/andika.jpeg') }}"
                                 class="img-fluid rounded-3 w-100"
                                 style="aspect-ratio: 1 / 1; object-fit: cover;"
-                                alt="Inspirasi gaya rambut pria 1"
+                                alt="Gaya rambut side part klimis"
                                 loading="lazy">
                         </div>
-                        <div class="col-4">
+                        <div class="col-6 col-md-4">
                             <img
-                                src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=60"
+                                src="{{ asset('images/nandar.jpeg') }}"
                                 class="img-fluid rounded-3 w-100"
                                 style="aspect-ratio: 1 / 1; object-fit: cover;"
-                                alt="Inspirasi gaya rambut pria 2"
+                                alt="Gaya taper fade rapi"
                                 loading="lazy">
                         </div>
-                        <div class="col-4">
+                        <div class="col-6 col-md-4">
                             <img
-                                src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=400&q=60"
+                                src="{{ asset('images/ridi.jpeg') }}"
                                 class="img-fluid rounded-3 w-100"
                                 style="aspect-ratio: 1 / 1; object-fit: cover;"
-                                alt="Inspirasi gaya rambut pria 3"
+                                alt="Gaya potongan rapi"
                                 loading="lazy">
                         </div>
                     </div>
@@ -390,7 +358,7 @@
             <div class="col-12 col-lg-4">
                 <div class="bg-panel card-bordered-gold rounded-3 shadow-sm p-4 h-100 d-flex flex-column fade-in-up fade-in-up-4">
                     <h3 class="fs-5 fw-bold mb-3">
-                        <i class="fas fa-lightbulb text-gold"></i> Tips Grooming Hari Ini
+                        Tips Grooming Hari Ini
                     </h3>
                     <p class="text-body-secondary mb-0">{{ $tipHariIni }}</p>
                 </div>
@@ -398,17 +366,13 @@
 
         </div>
 
-        {{-- =============================================== --}}
-        {{-- TRANSFORMASI KAMU (before & after) --}}
-        {{-- Section disembunyikan total kalau belum ada satu pun --}}
-        {{-- reservasi yang punya kedua foto before & after.        --}}
-        {{-- =============================================== --}}
+        {{-- TRANSFORMASI KAMU - disembunyikan total kalau belum ada reservasi dengan kedua foto before/after. --}}
         @if ($galeriTransformasi->isNotEmpty())
             <div class="row g-4 mt-1">
                 <div class="col-12">
                     <div class="bg-panel card-bordered-gold rounded-3 shadow-sm p-4 fade-in-up">
                         <h3 class="fs-5 fw-bold mb-3">
-                            <i class="fas fa-images text-gold"></i> Transformasi Kamu
+                            Transformasi Kamu
                         </h3>
 
                         <div class="row g-3">
@@ -452,12 +416,7 @@
                 </div>
             </div>
 
-            {{-- ========================================================= --}}
-            {{-- MODAL LIHAT FOTO TRANSFORMASI UKURAN PENUH                 --}}
-            {{-- Dirender di luar .row di atas (bukan di dalam card),       --}}
-            {{-- satu modal per item, supaya pelanggan bisa lihat before &  --}}
-            {{-- after dengan jelas/besar saat thumbnail-nya diklik.        --}}
-            {{-- ========================================================= --}}
+            {{-- Modal lihat foto ukuran penuh, satu per item, muncul saat thumbnail diklik. --}}
             @foreach ($galeriTransformasi as $item)
                 <div class="modal fade" id="transformasiView{{ $item->id }}" tabindex="-1" aria-labelledby="transformasiView{{ $item->id }}Label" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
@@ -496,14 +455,7 @@
     </div>
     </div>
 
-    {{--
-        Mengaktifkan tooltip Bootstrap pada badge/achievement kartu
-        member - berbeda dari modal/tab, tooltip WAJIB diinisialisasi
-        lewat JS (tidak otomatis lewat data-attribute saja). Dibungkus
-        IIFE dan dijalankan langsung (bukan menunggu DOMContentLoaded)
-        supaya tetap jalan saat halaman ini disisipkan ulang lewat
-        navigasi AJAX di layouts/navigation.blade.php.
-    --}}
+    {{-- Tooltip Bootstrap wajib diinisialisasi lewat JS, tidak otomatis lewat data-attribute saja. --}}
     <script>
         (function () {
             document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
@@ -512,16 +464,7 @@
         })();
     </script>
 
-    {{--
-        Polling status reservasi: kartu "Reservasi Terdekat" DAN angka
-        "reservasi selesai bulan ini" di card Aksi Cepat di-refresh
-        otomatis tiap 20 detik lewat endpoint JSON reservasi.statusUpdates,
-        supaya begitu admin mengonfirmasi/menyelesaikan reservasi,
-        keduanya ikut berubah di sini tanpa pelanggan perlu reload
-        halaman. Interval disimpan di window supaya tidak dobel kalau
-        script ini disisipkan ulang lewat navigasi AJAX (lihat
-        layouts/navigation.blade.php).
-    --}}
+    {{-- Polling tiap 20 detik: kartu "Reservasi Terdekat" & angka "selesai bulan ini" ikut ter-update tanpa reload. --}}
     <script>
         (function () {
             var statusUrl = '{{ route('reservasi.statusUpdates') }}';
@@ -579,12 +522,7 @@
                     return;
                 }
 
-                // Angka ini dihitung di server (lihat
-                // ReservationController::statusUpdates()) - bukan
-                // dihitung ulang di JS dari tanggal tiap reservasi -
-                // supaya selalu konsisten dengan angka saat render awal
-                // halaman, terlepas dari jam/zona waktu perangkat
-                // pelanggan.
+                // Dihitung di server, bukan di JS, biar tidak meleset gara-gara zona waktu perangkat.
                 var count = payload.reservasiSelesaiBulanIni;
                 if (typeof count === 'number' && parseInt(el.textContent, 10) !== count) {
                     el.textContent = count;

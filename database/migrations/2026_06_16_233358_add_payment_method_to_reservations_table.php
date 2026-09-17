@@ -13,9 +13,7 @@ return new class extends Migration
     {
         Schema::table('reservations', function (Blueprint $table) {
 
-            // Metode pembayaran
-            // online = bayar sekarang
-            // cod = bayar di tempat
+            // Metode pembayaran: online (bayar sekarang) atau cod (bayar di tempat).
             $table->enum('payment_method', ['online', 'cod'])
                 ->default('cod')
                 ->after('status');

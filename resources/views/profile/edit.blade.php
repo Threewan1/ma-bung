@@ -1,9 +1,7 @@
 <x-app-layout>
     <div class="container profile-page-container pt-3 pb-3">
 
-        {{-- Avatar & identitas - dipadatkan (avatar diperkecil, padding
-             vertikal sekitar header dikurangi) supaya tidak memakan
-             banyak ruang vertikal di bagian atas halaman. --}}
+        {{-- Avatar & identitas, dipadatkan biar tidak memakan banyak ruang vertikal. --}}
         <div class="text-center mb-2">
             <form id="avatarUploadForm" method="POST" action="{{ route('profile.avatar.update') }}" enctype="multipart/form-data" class="d-inline-block">
                 @csrf
@@ -31,17 +29,7 @@
             </p>
         </div>
 
-        {{--
-            3 form (Informasi Profil, Ubah Kata Sandi, Hapus Akun)
-            sebelumnya ditumpuk sebagai 3 card vertikal terpisah -
-            sekarang jadi TAB Bootstrap native (data-bs-toggle="tab"),
-            supaya cuma 1 form yang terlihat sekaligus dan total tinggi
-            halaman jauh berkurang. "Informasi Profil" aktif secara
-            default, kecuali ada validation error / status sukses yang
-            relevan ke tab lain (mis. gagal ganti password) - supaya
-            pesan tersebut tetap langsung terlihat tanpa pindah tab
-            manual, termasuk setelah redirect via AJAX nav.
-        --}}
+        {{-- 3 form jadi tab Bootstrap, tab aktif default ikut pindah ke mana pun ada error/status sukses. --}}
         @php
             $profileActiveTab = 'info';
             if ($errors->updatePassword->isNotEmpty() || session('status') === 'password-updated') {
@@ -113,13 +101,7 @@
         </div>
     </div>
 
-    {{--
-        Dibungkus IIFE dan dijalankan langsung (bukan menunggu
-        DOMContentLoaded) supaya tetap jalan saat halaman ini
-        disisipkan ulang lewat navigasi AJAX di
-        layouts/navigation.blade.php (event DOMContentLoaded cuma
-        terjadi sekali per page-load asli).
-    --}}
+    {{-- Dijalankan langsung (bukan nunggu DOMContentLoaded) biar tetap jalan saat disisipkan ulang lewat navigasi AJAX. --}}
     <script>
         (function () {
             var avatarInput = document.getElementById('avatarInput');
@@ -137,9 +119,7 @@
                     return;
                 }
 
-                // Preview instan sebelum form selesai terkirim, supaya
-                // pelanggan langsung lihat hasilnya tanpa menunggu
-                // round-trip ke server.
+                // Preview instan, tidak nunggu round-trip ke server.
                 var reader = new FileReader();
                 reader.onload = function (e) {
                     previewImg.src = e.target.result;
@@ -150,8 +130,7 @@
                 };
                 reader.readAsDataURL(file);
 
-                // Form ini ditangkap oleh listener submit AJAX global
-                // di layouts/navigation.blade.php seperti form lain.
+                // Ditangkap listener submit AJAX global seperti form lain.
                 if (avatarForm.requestSubmit) {
                     avatarForm.requestSubmit();
                 } else {

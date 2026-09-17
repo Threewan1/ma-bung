@@ -1,210 +1,57 @@
-{{--
-    Partial daftar reservasi (versi tabel desktop + versi card mobile),
-    dipakai berkali-kali oleh admin/reservasi/index.blade.php - satu kali
-    per tab status (Menunggu Konfirmasi/Dikonfirmasi/Selesai/Dibatalkan/
-    Semua), supaya markup tabel & card-nya tidak perlu ditulis ulang 5
-    kali. Terima 2 variabel:
-    - $reservations : Collection reservasi yang mau ditampilkan di tab ini
-    - $emptyMessage  : pesan saat $reservations kosong (khusus per tab)
---}}
+{{-- Partial daftar reservasi (grid card), dipakai berkali-kali per tab status lewat _tab-content.blade.php - terima $reservations & $emptyMessage. --}}
 
-{{-- ================================================= --}}
-{{-- VERSI TABEL (desktop, >=768px) --}}
-{{-- ================================================= --}}
-<div class="bg-panel rounded-3 overflow-hidden d-none d-md-block">
-    <div class="table-responsive">
-    <table class="table table-dark table-hover align-middle mb-0">
-        <thead class="bg-surface">
-            <tr>
-                <th>No</th>
-                <th>Pelanggan</th>
-                <th>Layanan</th>
-                <th>Barber</th>
-                <th>Tanggal</th>
-                <th>Jam</th>
-                <th>No. Antrian</th>
-                <th>Pembayaran</th>
-                <th data-col="bukti-bayar">Bukti Bayar</th>
-                <th>Status</th>
-                <th>Before/After</th>
-                <th>Aksi</th>
-            </tr>
-        </thead>
-        <tbody>
-            {{-- Loop reservasi untuk tab ini --}}
-            @forelse($reservations as $reservasi)
-            @php
-                $paymentStatus = $reservasi->payment_status ?? 'unpaid';
-            @endphp
-            <tr data-row-payment-method="{{ $reservasi->payment_method }}">
-                <td>{{ $loop->iteration }}</td>
-                <td>{{ $reservasi->user->name }}</td>
-                <td>{{ $reservasi->service->nama_layanan }}</td>
-                <td>{{ $reservasi->barber->nama ?? '-' }}</td>
-                <td>{{ $reservasi->tanggal }}</td>
-                <td>{{ $reservasi->jam }}</td>
-                <td>
-                    @if($reservasi->queue)
-                        <span class="badge rounded-pill text-bg-primary">
-                            #{{ $reservasi->queue->nomor_antrian }}
-                        </span>
-                    @else
-                        -
-                    @endif
-                </td>
-
-                {{-- ========================================= --}}
-                {{-- METODE & STATUS PEMBAYARAN --}}
-                {{-- ========================================= --}}
-                <td>
-                    <div class="fw-medium mb-1">
-                        {{ $reservasi->payment_method === 'online' ? 'Online' : 'COD' }}
-                    </div>
-
-                    @if($paymentStatus === 'unpaid')
-                        <span class="badge text-bg-danger">Belum Bayar</span>
-                    @elseif($paymentStatus === 'waiting_verification')
-                        <span class="badge text-bg-warning">Menunggu Verifikasi</span>
-                    @elseif($paymentStatus === 'paid')
-                        <span class="badge text-bg-success">Lunas</span>
-                    @elseif($paymentStatus === 'rejected')
-                        <span class="badge text-bg-danger">Ditolak</span>
-                    @endif
-                </td>
-
-                {{-- ========================================= --}}
-                {{-- BUKTI PEMBAYARAN (thumbnail + modal) --}}
-                {{-- Kolom ini disembunyikan sepenuhnya saat filter        --}}
-                {{-- metode pembayaran "COD" aktif (lihat data-col di       --}}
-                {{-- <th> & CSS di theme.css) - untuk baris COD di tampilan --}}
-                {{-- "Semua Metode", cukup tampilkan strip pendek karena    --}}
-                {{-- memang tidak relevan (bukan kalimat panjang).          --}}
-                {{-- ========================================= --}}
-                <td data-col="bukti-bayar">
-                    @if($reservasi->payment_method === 'online' && $reservasi->payment_proof)
-                        <img
-                            src="{{ asset('storage/' . $reservasi->payment_proof) }}"
-                            alt="Bukti pembayaran {{ $reservasi->user->name }}"
-                            class="rounded-2 border border-gold"
-                            style="width: 3rem; height: 3rem; object-fit: cover; cursor: pointer;"
-                            data-bs-toggle="modal"
-                            data-bs-target="#buktiModal{{ $reservasi->id }}"
-                        >
-                    @elseif($reservasi->payment_method !== 'online')
-                        <span class="text-body-secondary">&mdash;</span>
-                    @else
-                        <span class="text-body-secondary small fst-italic">Tidak ada bukti pembayaran</span>
-                    @endif
-                </td>
-
-                <td>
-                    {{-- Form update status reservasi --}}
-                    <form method="POST" action="/admin/reservasi/{{ $reservasi->id }}" class="mb-0">
-                        @csrf
-                        @method('PUT')
-                        <select name="status" onchange="this.form.submit()" class="form-select form-select-sm">
-                            <option value="pending" {{ $reservasi->status == 'pending' ? 'selected' : '' }}>Pending</option>
-                            <option value="confirmed" {{ $reservasi->status == 'confirmed' ? 'selected' : '' }}>Confirmed</option>
-                            <option value="sedang_dilayani" {{ $reservasi->status == 'sedang_dilayani' ? 'selected' : '' }}>Sedang Dilayani</option>
-                            <option value="cancelled" {{ $reservasi->status == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
-                            <option value="done" {{ $reservasi->status == 'done' ? 'selected' : '' }}>Selesai</option>
-                        </select>
-                    </form>
-                </td>
-
-                {{-- ========================================= --}}
-                {{-- FOTO BEFORE/AFTER (hanya reservasi selesai) --}}
-                {{-- ========================================= --}}
-                <td>
-                    @if($reservasi->status === 'done')
-                        <button
-                            type="button"
-                            class="btn btn-outline-primary btn-sm text-nowrap"
-                            data-bs-toggle="modal"
-                            data-bs-target="#transformasiModal{{ $reservasi->id }}"
-                        >
-                            <i class="fas fa-images"></i>
-                            {{ ($reservasi->foto_before && $reservasi->foto_after) ? 'Edit Foto' : 'Upload Foto' }}
-                        </button>
-                    @else
-                        <span class="text-body-secondary">&mdash;</span>
-                    @endif
-                </td>
-
-                <td>
-                    {{-- Tombol Hapus --}}
-                    <form method="POST" action="/admin/reservasi/{{ $reservasi->id }}" class="mb-0">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit"
-                            onclick="return confirm('Yakin ingin menghapus reservasi ini?')"
-                            class="btn btn-danger btn-sm">
-                            <i class="fas fa-trash"></i> Hapus
-                        </button>
-                    </form>
-                </td>
-            </tr>
-            @empty
-            {{-- Tampilkan pesan jika belum ada reservasi di tab ini --}}
-            <tr>
-                <td colspan="12" class="text-center text-body-secondary py-4">
-                    {{ $emptyMessage ?? 'Belum ada reservasi.' }}
-                </td>
-            </tr>
-            @endforelse
-        </tbody>
-    </table>
-    </div>
-</div>
-
-{{-- ================================================= --}}
-{{-- VERSI CARD (mobile/tablet, <768px) --}}
-{{-- ================================================= --}}
-<div class="table-card-list d-block d-md-none">
+<div class="admin-reservasi-grid">
     @forelse($reservations as $reservasi)
         @php
             $paymentStatus = $reservasi->payment_status ?? 'unpaid';
-            $paymentBadge = match($paymentStatus) {
-                'unpaid' => ['danger', 'Belum Bayar'],
-                'waiting_verification' => ['warning', 'Menunggu Verifikasi'],
-                'paid' => ['success', 'Lunas'],
-                'rejected' => ['danger', 'Ditolak'],
-                default => ['secondary', ucfirst($paymentStatus)],
-            };
+            $paymentBadge = $reservasi->payment_badge;
         @endphp
 
-        <div class="table-card-item" data-row-payment-method="{{ $reservasi->payment_method }}">
+        <div class="admin-reservasi-card" data-row-payment-method="{{ $reservasi->payment_method }}">
 
-            {{-- Pelanggan + layanan sebagai judul card --}}
-            <div class="table-card-item-title">
-                #{{ $loop->iteration }} &mdash; {{ $reservasi->user->name }}
-                <div class="fw-normal text-body-secondary" style="font-size: 0.85rem;">
-                    {{ $reservasi->service->nama_layanan }}
-                </div>
+            {{-- Nomor urut + nama layanan sebagai judul card --}}
+            <div class="admin-reservasi-card-title">
+                #{{ $loop->iteration }} &mdash; {{ $reservasi->service->nama_layanan }}
             </div>
 
-            {{-- Tanggal dan Jam berdampingan --}}
-            <div class="table-card-item-cols">
+            <div class="admin-reservasi-card-row">
+                <span class="admin-reservasi-card-label">Pelanggan</span>
+                <span class="admin-reservasi-card-value">{{ $reservasi->user->name }}</span>
+            </div>
+
+            {{-- Nomor WA pelanggan, pakai ulang pola yang sama dari barber/dashboard.blade.php. --}}
+            <div class="admin-reservasi-card-row">
+                <span class="admin-reservasi-card-label">No. WhatsApp</span>
+                <span class="admin-reservasi-card-value">
+                    @if($reservasi->user->no_hp)
+                        <a href="https://wa.me/{{ preg_replace('/^0/', '62', $reservasi->user->no_hp) }}" target="_blank" rel="noopener" class="text-gold text-decoration-none">
+                            <i class="fab fa-whatsapp"></i> {{ $reservasi->user->no_hp }}
+                        </a>
+                    @else
+                        <span class="text-body-secondary">-</span>
+                    @endif
+                </span>
+            </div>
+
+            <div class="admin-reservasi-card-row">
+                <span class="admin-reservasi-card-label">Barber</span>
+                <span class="admin-reservasi-card-value">{{ $reservasi->barber->nama ?? '-' }}</span>
+            </div>
+
+            <div class="admin-reservasi-card-cols">
                 <div>
-                    <div class="table-card-item-label">Tanggal</div>
-                    <div class="table-card-item-value">{{ $reservasi->tanggal }}</div>
+                    <div class="admin-reservasi-card-label">Tanggal</div>
+                    <div class="admin-reservasi-card-value text-start">{{ $reservasi->tanggal }}</div>
                 </div>
                 <div class="text-end">
-                    <div class="table-card-item-label">Jam</div>
-                    <div class="table-card-item-value">{{ $reservasi->jam }}</div>
+                    <div class="admin-reservasi-card-label">Jam</div>
+                    <div class="admin-reservasi-card-value">{{ $reservasi->jam }}</div>
                 </div>
             </div>
 
-            {{-- Barber --}}
-            <div class="table-card-item-row">
-                <span class="table-card-item-label">Barber</span>
-                <span class="table-card-item-value">{{ $reservasi->barber->nama ?? '-' }}</span>
-            </div>
-
-            {{-- Nomor Antrian --}}
-            <div class="table-card-item-row">
-                <span class="table-card-item-label">No. Antrian</span>
-                <span class="table-card-item-value">
+            <div class="admin-reservasi-card-row d-none d-sm-flex">
+                <span class="admin-reservasi-card-label">No. Antrian</span>
+                <span class="admin-reservasi-card-value">
                     @if($reservasi->queue)
                         <span class="badge rounded-pill text-bg-primary">#{{ $reservasi->queue->nomor_antrian }}</span>
                     @else
@@ -213,78 +60,108 @@
                 </span>
             </div>
 
-            {{-- Pembayaran --}}
-            <div class="table-card-item-row">
-                <span class="table-card-item-label">Pembayaran</span>
-                <span class="table-card-item-value">{{ $reservasi->payment_method === 'online' ? 'Online' : 'COD' }}</span>
+            <div class="admin-reservasi-card-row d-none d-sm-flex">
+                <span class="admin-reservasi-card-label">Pembayaran</span>
+                <span class="admin-reservasi-card-value">{{ $reservasi->payment_method === 'online' ? 'Online' : 'COD' }}</span>
             </div>
 
-            <div class="table-card-item-row">
-                <span class="table-card-item-label">Status Bayar</span>
-                <span class="badge text-bg-{{ $paymentBadge[0] }}">{{ $paymentBadge[1] }}</span>
+            <div class="admin-reservasi-card-row">
+                <span class="admin-reservasi-card-label">Status Bayar</span>
+                <span class="badge text-bg-{{ $paymentBadge[0] }}">{{ $paymentBadge[2] }}</span>
             </div>
 
-            {{-- Bukti Pembayaran --}}
-            @if($reservasi->payment_method === 'online' && $reservasi->payment_proof)
-                <div class="table-card-item-row">
-                    <span class="table-card-item-label">Bukti Bayar</span>
-                    <img
-                        src="{{ asset('storage/' . $reservasi->payment_proof) }}"
-                        alt="Bukti pembayaran {{ $reservasi->user->name }}"
-                        class="rounded-2 border border-gold"
-                        style="width: 3rem; height: 3rem; object-fit: cover; cursor: pointer;"
-                        data-bs-toggle="modal"
-                        data-bs-target="#buktiModal{{ $reservasi->id }}"
-                    >
+            {{-- Cuma relevan untuk online, tidak dirender sama sekali untuk COD (bukan cuma disembunyikan CSS). --}}
+            @if($reservasi->payment_method === 'online')
+                <div class="admin-reservasi-card-row">
+                    <span class="admin-reservasi-card-label">Bukti Bayar</span>
+                    <span class="admin-reservasi-card-value">
+                        @if($reservasi->payment_proof)
+                            <img
+                                src="{{ asset('storage/' . $reservasi->payment_proof) }}"
+                                alt="Bukti pembayaran {{ $reservasi->user->name }}"
+                                class="rounded-2 border border-gold"
+                                style="width: 2.25rem; height: 2.25rem; object-fit: cover; cursor: pointer;"
+                                data-bs-toggle="modal"
+                                data-bs-target="#buktiModal{{ $reservasi->id }}"
+                            >
+                        @else
+                            <span class="text-body-secondary small fst-italic">Belum ada bukti</span>
+                        @endif
+                    </span>
                 </div>
             @endif
 
-            {{-- Status Reservasi --}}
-            <div class="mt-3">
-                <div class="table-card-item-label mb-1">Status Reservasi</div>
-                <form method="POST" action="/admin/reservasi/{{ $reservasi->id }}" class="mb-0">
-                    @csrf
-                    @method('PUT')
-                    <select name="status" onchange="this.form.submit()" class="form-select form-select-sm">
-                        <option value="pending" {{ $reservasi->status == 'pending' ? 'selected' : '' }}>Pending</option>
-                        <option value="confirmed" {{ $reservasi->status == 'confirmed' ? 'selected' : '' }}>Confirmed</option>
-                        <option value="cancelled" {{ $reservasi->status == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
-                        <option value="done" {{ $reservasi->status == 'done' ? 'selected' : '' }}>Selesai</option>
-                    </select>
-                </form>
+            {{-- "Sedang Dilayani"/"Selesai" cuma boleh diubah barber, jadi ditampilkan read-only, bukan dropdown. --}}
+            @php
+                // Reservasi online yang masih pending wajib dikonfirmasi lewat modal bukti bayar, bukan dropdown ini.
+                $konfirmasiViaModal = $reservasi->payment_method === 'online' && $reservasi->status === 'pending';
+            @endphp
+            <div class="admin-reservasi-card-status">
+                <div class="admin-reservasi-card-label mb-1">Status Reservasi</div>
+                @if(in_array($reservasi->status, ['sedang_dilayani', 'done']))
+                    <span class="badge {{ $reservasi->status === 'done' ? 'text-bg-success' : 'text-bg-primary' }}">
+                        {{ $reservasi->status === 'done' ? 'Selesai' : 'Sedang Dilayani' }}
+                    </span>
+                @else
+                    <form method="POST" action="/admin/reservasi/{{ $reservasi->id }}" class="mb-0">
+                        @csrf
+                        @method('PUT')
+                        <select name="status" onchange="nonaktifkanSelectDanKirim(this)" class="form-select form-select-sm">
+                            <option value="pending" {{ $reservasi->status == 'pending' ? 'selected' : '' }}>Menunggu</option>
+                            <option value="confirmed" {{ $konfirmasiViaModal ? 'disabled' : '' }} {{ $reservasi->status == 'confirmed' ? 'selected' : '' }}>Dikonfirmasi</option>
+                            <option value="cancelled" {{ $reservasi->status == 'cancelled' ? 'selected' : '' }}>Dibatalkan</option>
+                        </select>
+                    </form>
+                    @if($konfirmasiViaModal)
+                        <p class="text-body-secondary small fst-italic mt-1 mb-0">
+                            Cek bukti pembayaran dulu untuk konfirmasi &darr;
+                        </p>
+                    @endif
+                @endif
             </div>
 
-            {{-- Foto Before/After (hanya reservasi selesai) --}}
-            @if($reservasi->status === 'done')
-                <div class="mt-3">
+            {{-- Aksi: Lihat Bukti & Konfirmasi (online, menunggu) + Tandai Lunas (COD belum lunas) + Hapus --}}
+            <div class="admin-reservasi-card-footer">
+                {{-- Satu-satunya jalan konfirmasi reservasi online, membuka modal bukti bayar di index.blade.php. --}}
+                @if($konfirmasiViaModal && $reservasi->payment_proof)
                     <button
                         type="button"
-                        class="btn btn-outline-primary btn-sm w-100"
+                        class="btn btn-outline-warning btn-sm w-100"
                         data-bs-toggle="modal"
-                        data-bs-target="#transformasiModal{{ $reservasi->id }}"
+                        data-bs-target="#buktiModal{{ $reservasi->id }}"
+                        title="Lihat Bukti Pembayaran &amp; Konfirmasi"
                     >
-                        <i class="fas fa-images"></i>
-                        {{ ($reservasi->foto_before && $reservasi->foto_after) ? 'Edit Foto Before/After' : 'Upload Foto Before/After' }}
+                        <i class="fas fa-receipt"></i><span class="d-none d-sm-inline"> Lihat Bukti Pembayaran &amp; Konfirmasi</span>
                     </button>
-                </div>
-            @endif
+                @endif
 
-            {{-- Aksi --}}
-            <div class="table-card-item-footer">
+                {{-- Tombol cepat khusus COD, dipisah dari dropdown status pelayanan di atas. --}}
+                @if($reservasi->payment_method !== 'online' && $paymentStatus !== 'paid')
+                    <form method="POST" action="{{ route('admin.reservasi.updatePaymentStatus', $reservasi->id) }}" class="mb-0" data-disable-on-submit>
+                        @csrf
+                        @method('PATCH')
+                        <input type="hidden" name="payment_status" value="paid">
+                        <button type="submit" class="btn btn-outline-success btn-sm w-100" title="Tandai Lunas">
+                            <i class="fas fa-money-bill-wave"></i><span class="d-none d-sm-inline"> Tandai Lunas</span>
+                        </button>
+                    </form>
+                @endif
+
                 <form method="POST" action="/admin/reservasi/{{ $reservasi->id }}" class="mb-0">
                     @csrf
                     @method('DELETE')
                     <button type="submit"
                         onclick="return confirm('Yakin ingin menghapus reservasi ini?')"
-                        class="btn btn-danger btn-sm w-100">
-                        <i class="fas fa-trash"></i> Hapus
+                        class="btn btn-danger btn-sm w-100"
+                        title="Hapus">
+                        <i class="fas fa-trash"></i><span class="d-none d-sm-inline"> Hapus</span>
                     </button>
                 </form>
             </div>
 
         </div>
     @empty
-        <div class="table-card-item text-center text-body-secondary">
+        <div class="admin-reservasi-card-empty text-center text-body-secondary">
             {{ $emptyMessage ?? 'Belum ada reservasi.' }}
         </div>
     @endforelse

@@ -1,7 +1,7 @@
 <x-admin-layout title="Edit Barber">
 
     <h2 class="fs-2 fw-bold text-gold mb-4">
-        <i class="fas fa-user-edit"></i> Edit Barber
+        Edit Barber
     </h2>
 
     {{-- Pesan Error --}}

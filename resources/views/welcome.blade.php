@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ma'bung Barbershop</title>
+    <link rel="icon" type="image/jpeg" href="{{ asset('images/logo.jpeg') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/theme.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -11,18 +12,8 @@
 </head>
 <body class="site-bg">
 
-    {{-- Navbar minimal: hamburger di kiri, nama brand di tengah.
-         Pakai container-fluid (bukan .container) supaya hamburger-nya
-         benar-benar mepet ke tepi kiri viewport di semua lebar layar -
-         .container biasa akan ikut membatasi lebar & center dengan
-         margin di layar lebar, sehingga tombolnya malah bergeser jauh
-         dari tepi kiri asli. Tombolnya juga sengaja TIDAK position:
-         absolute (beda dari sebelumnya) - dibuat flex item biasa +
-         spacer kosong seukuran tombol di sisi kanan supaya brand tetap
-         center, sama persis strukturnya dengan navbar-floating di
-         halaman setelah login (termasuk ikon bi-list yang sama), jadi
-         posisi vertikal ikonnya konsisten/sejajar di kedua tempat. --}}
-    <nav class="navbar position-fixed top-0 w-100 z-3" style="background: linear-gradient(to bottom, rgba(0,0,0,.65), transparent);">
+    {{-- Navbar minimal: pakai container-fluid biar hamburger benar-benar mepet tepi kiri, spacer kosong di kanan biar brand tetap center. --}}
+    <nav id="landingNavbar" class="navbar position-fixed top-0 z-3" style="background: linear-gradient(to bottom, rgba(0,0,0,.65), transparent);">
         <div class="container-fluid d-flex align-items-center px-3 py-2">
             <button
                 class="btn btn-link text-white p-1 flex-shrink-0"
@@ -35,8 +26,11 @@
                 <i class="bi bi-list fs-3 navbar-floating-icon"></i>
             </button>
 
-            <span class="navbar-brand fw-bold fs-4 text-gold mb-0 flex-grow-1 text-center">
-                <i class="fas fa-cut"></i> Ma'bung Barbershop
+            <span class="navbar-brand fw-bold fs-4 text-gold mb-0 flex-grow-1 text-center d-flex align-items-center justify-content-center gap-2">
+                <span class="brand-logo brand-logo-md">
+                    <img src="{{ asset('images/logo.jpeg') }}" alt="Logo Ma'bung Barbershop">
+                </span>
+                <span class="navbar-brand-text">Ma'bung Barbershop</span>
             </span>
 
             {{-- Spacer kosong seukuran tombol hamburger, supaya brand di atas benar-benar center (bukan condong ke kanan) --}}
@@ -44,11 +38,7 @@
         </div>
     </nav>
 
-    {{-- Menu offcanvas (hamburger) - data-bs-backdrop="false" supaya
-         TIDAK ada lapisan gelap yang menutupi halaman saat offcanvas
-         terbuka; efeknya diganti "push" (halaman geser ke kanan lewat
-         class .content-pushed di <main>, lihat script di bawah) sama
-         seperti panel profil di halaman setelah login. --}}
+    {{-- data-bs-backdrop="false" biar tanpa lapisan gelap, efeknya diganti "push" (lihat script di bawah). --}}
     <div
         class="offcanvas offcanvas-start text-bg-dark"
         tabindex="-1"
@@ -58,34 +48,36 @@
         data-bs-scroll="true"
     >
         <div class="offcanvas-header border-bottom border-secondary-subtle">
-            <h5 class="offcanvas-title text-gold" id="menuUtamaLabel">Ma'bung Barbershop</h5>
+            <h5 class="offcanvas-title text-gold d-flex align-items-center gap-2" id="menuUtamaLabel">
+                <span class="brand-logo brand-logo-sm">
+                    <img src="{{ asset('images/logo.jpeg') }}" alt="Logo Ma'bung Barbershop">
+                </span>
+                Ma'bung Barbershop
+            </h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Tutup"></button>
         </div>
         <div class="offcanvas-body d-flex flex-column">
 
-            {{-- Menu utama - gaya item disamakan dengan sidebar admin
-                 (.admin-nav-link) dan offcanvas "Profil Saya" pelanggan
-                 (.offcanvas-nav-link): ikon + padding + highlight aktif
-                 border-kiri gold. --}}
+            {{-- Gaya item disamakan dengan sidebar admin & offcanvas "Profil Saya" pelanggan. --}}
             <ul class="navbar-nav gap-1">
                 <li class="nav-item">
                     <a class="nav-link offcanvas-nav-link" href="#hero">
-                        <i class="bi bi-house-door-fill"></i> Beranda
+                        Beranda
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link offcanvas-nav-link" href="#tentang">
-                        <i class="bi bi-info-circle-fill"></i> Tentang Kami
+                        Tentang Kami
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link offcanvas-nav-link" href="#layanan">
-                        <i class="bi bi-scissors"></i> Layanan
+                        Layanan
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link offcanvas-nav-link" href="#galeri">
-                        <i class="bi bi-images"></i> Galeri
+                        Galeri
                     </a>
                 </li>
             </ul>
@@ -98,32 +90,30 @@
                 @auth
                     <li class="nav-item">
                         <a class="nav-link offcanvas-nav-link" href="{{ route('dashboard') }}">
-                            <i class="bi bi-speedometer2"></i> Dashboard
+                            Dashboard
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link offcanvas-nav-link" href="{{ route('reservasi.index') }}">
-                            <i class="bi bi-calendar-check"></i> Reservasi Saya
+                            Reservasi Saya
                         </a>
                     </li>
                 @else
                     <li class="nav-item">
                         <a class="nav-link offcanvas-nav-link" href="{{ route('login') }}">
-                            <i class="bi bi-key-fill"></i> Masuk
+                            Masuk
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link offcanvas-nav-link" href="{{ route('register') }}">
-                            <i class="bi bi-person-plus-fill"></i> Daftar
+                            Daftar
                         </a>
                     </li>
                 @endauth
             </ul>
 
             @auth
-                {{-- Keluar - gaya disamakan dengan tombol Keluar di sidebar
-                     admin & offcanvas "Profil Saya" pelanggan
-                     (btn-outline-danger penuh, terpisah dari menu biasa). --}}
+                {{-- Gaya disamakan dengan tombol Keluar di sidebar admin & offcanvas pelanggan. --}}
                 <form method="POST" action="{{ route('logout') }}" class="pt-2 pb-3 border-bottom border-secondary-subtle mb-3">
                     @csrf
                     <button type="submit" class="btn btn-outline-danger w-100">
@@ -132,40 +122,13 @@
                 </form>
             @endauth
 
-            {{-- Info kontak singkat (data placeholder) - ps-3 (1rem)
-                 supaya ikonnya sejajar persis dengan ikon menu di atas
-                 (.offcanvas-nav-link punya padding-left 1rem juga). --}}
-            <div class="small text-body-secondary d-flex flex-column gap-2 mb-3 ps-3">
-                <div><i class="bi bi-geo-alt-fill text-gold me-2"></i>Jl. Contoh Raya No. 123, Jakarta</div>
-                <div><i class="bi bi-whatsapp text-gold me-2"></i>0812-3456-7890</div>
-                <div><i class="bi bi-clock-fill text-gold me-2"></i>Setiap hari, 09.00 - 21.00 WIB</div>
-                <a href="https://www.google.com/maps/search/?api=1&query=Jl.+Contoh+Raya+No.+123%2C+Jakarta" target="_blank" rel="noopener" class="btn btn-outline-warning btn-sm mt-1">
-                    <i class="bi bi-map"></i> Buka di Google Maps
-                </a>
-            </div>
-
-            {{-- Sosial media - center lagi di tengah offcanvas (bukan
-                 rata kiri), align-items-center supaya ketiga ikon
-                 sejajar sempurna, gap-3 (16px) untuk jarak yang konsisten. --}}
-            <div class="d-flex align-items-center justify-content-center gap-3 mb-3">
-                <a href="#" class="social-link fs-4" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
-                <a href="#" class="social-link fs-4" aria-label="WhatsApp"><i class="bi bi-whatsapp"></i></a>
-                <a href="#" class="social-link fs-4" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
-            </div>
-
-            {{-- ms-3 (margin-left 1rem) supaya sisi kiri tombol ini
-                 sejajar persis dengan tombol "Buka di Google Maps" di
-                 atasnya (yang beradanya di dalam div berpadding ps-3). --}}
             <a href="{{ auth()->check() ? route('reservasi.create') : route('login') }}" class="btn btn-primary mt-auto ms-3">
                 <i class="fas fa-calendar-check"></i> Reservasi Sekarang
             </a>
         </div>
     </div>
 
-    {{-- Konten halaman dibungkus <main id="main-content"> supaya bisa
-         digeser bareng-bareng (class .content-pushed, sudah didefinisikan
-         di theme.css) saat offcanvas menu dibuka - sama seperti pola
-         "push" panel profil di halaman setelah login. --}}
+    {{-- Dibungkus <main id="main-content"> biar bisa ikut "push" saat offcanvas menu dibuka. --}}
     <main id="main-content">
 
     {{-- Hero Section dengan carousel foto latar --}}
@@ -181,19 +144,19 @@
 
             <div class="carousel-inner h-100">
                 <div class="carousel-item active h-100">
-                    <img src="https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=1920&q=80"
+                    <img src="{{ asset('images/mabung-barber.jpeg') }}"
                         class="d-block w-100 h-100" style="object-fit: cover;"
-                        alt="Pelanggan sedang dicukur rapi di barbershop">
+                        alt="Signage Ma'bung Barbershop Shave &amp; Cuts">
                 </div>
                 <div class="carousel-item h-100">
-                    <img src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1920&q=80"
+                    <img src="{{ asset('images/amos.jpeg') }}"
                         class="d-block w-100 h-100" style="object-fit: cover;"
-                        alt="Gunting rambut profesional di barbershop">
+                        alt="Proses potong rambut di Ma'bung Barbershop">
                 </div>
                 <div class="carousel-item h-100">
-                    <img src="https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?auto=format&fit=crop&w=1920&q=80"
+                    <img src="{{ asset('images/ruangan.jpeg') }}"
                         class="d-block w-100 h-100" style="object-fit: cover;"
-                        alt="Kursi dan suasana barbershop premium">
+                        alt="Suasana interior Ma'bung Barbershop">
                 </div>
             </div>
         </div>
@@ -203,7 +166,7 @@
 
         {{-- Konten hero, statis di atas carousel --}}
         <div class="position-absolute top-50 start-50 translate-middle z-2 text-center px-3" style="width: 100%; max-width: 42rem;">
-            <h1 class="display-4 fw-bold text-white mb-3">Tampil Rapi, Percaya Diri</h1>
+            <h1 class="display-4 fw-bold text-white mb-3 hero-title">Tampil Rapi, Percaya Diri</h1>
             <p class="fs-5 text-white-50 mb-4">
                 Rasakan pengalaman potong rambut dan grooming premium ala pria sejati, hanya di Ma'Bung Barbershop.
             </p>
@@ -213,23 +176,13 @@
         </div>
     </header>
 
-    {{-- ===================================================================
-         PROMO BANNER - KONTEN PLACEHOLDER.
-         Ganti teks di dalam <span> sesuai promo yang sedang aktif, atau
-         hapus seluruh <div class="promo-banner">...</div> ini kalau
-         sedang tidak ada promo berjalan.
-         =================================================================== --}}
-    <div class="promo-banner text-center py-2 px-3">
-        <span class="fw-semibold">🎉 Promo: Diskon 10% untuk reservasi pertama!</span>
-    </div>
-
     {{-- Tentang Kami Section --}}
     <section id="tentang" class="py-5">
         <div class="container">
             <div class="row align-items-center g-4 g-lg-5">
                 <div class="col-lg-6">
                     <img
-                        src="https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=900&q=80"
+                        src="{{ asset('images/ruangan.jpeg') }}"
                         alt="Suasana Ma'bung Barbershop"
                         class="img-fluid rounded-4 shadow"
                     >
@@ -260,49 +213,48 @@
 
         <div class="container position-relative">
             <h2 class="fs-2 fw-bold text-center text-gold mb-5">Layanan Kami</h2>
-            <div class="row g-4">
-                <div class="col-md-6 col-lg-4">
-                    <div class="card-layanan h-100 fade-in-up fade-in-up-1">
-                        <div class="card-layanan-img-wrap">
-                            <img src="https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&w=800&q=80"
-                                alt="Barber sedang memotong rambut pelanggan">
-                        </div>
-                        <div class="p-4 text-center">
-                            <h3 class="fs-5 fw-bold mb-2">Potong Rambut</h3>
-                            <p class="text-body-secondary mb-0">Potong rambut profesional sesuai keinginan kamu.</p>
-                        </div>
-                    </div>
+            @if ($layanan->isEmpty())
+                <div class="bg-panel card-bordered-gold rounded-3 p-5 text-center text-body-secondary">
+                    <p class="mb-0">Belum ada layanan yang tersedia.</p>
                 </div>
-                <div class="col-md-6 col-lg-4">
-                    <div class="card-layanan h-100 fade-in-up fade-in-up-2">
-                        <div class="card-layanan-img-wrap">
-                            <img src="https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&w=800&q=80"
-                                alt="Peralatan cukur jenggot profesional">
+            @else
+                {{-- Layanan tanpa foto sendiri dikasih foto toko placeholder biar card tidak kosong. --}}
+                @php
+                    $fotoLayanan = [
+                        'potong rambut' => asset('images/mondo.jpeg'),
+                        'cukur kumis dan brewok' => asset('images/kenan.jpeg'),
+                    ];
+                    $fotoFallback = [
+                        asset('images/ruangan.jpeg'),
+                        asset('images/amos.jpeg'),
+                        asset('images/peralatanbarber.jpeg'),
+                        asset('images/mabung-barber.jpeg'),
+                    ];
+                @endphp
+                <div class="row g-4">
+                    @foreach ($layanan as $item)
+                        <div class="col-4 col-md-6 col-lg-4">
+                            <div class="card-layanan h-100 fade-in-up fade-in-up-{{ ($loop->index % 4) + 1 }}">
+                                <div class="card-layanan-img-wrap">
+                                    <img src="{{ $item->foto ? asset('storage/' . $item->foto) : ($fotoLayanan[strtolower($item->nama_layanan)] ?? $fotoFallback[$loop->index % count($fotoFallback)]) }}"
+                                        alt="Layanan {{ $item->nama_layanan }}">
+                                </div>
+                                <div class="card-layanan-body text-center">
+                                    <h3 class="fw-bold mb-2">{{ $item->nama_layanan }}</h3>
+                                    <p class="text-gold fw-bold mb-0">
+                                        Rp {{ number_format($item->harga, 0, ',', '.') }}
+                                    </p>
+                                </div>
+                            </div>
                         </div>
-                        <div class="p-4 text-center">
-                            <h3 class="fs-5 fw-bold mb-2">Cukur Jenggot</h3>
-                            <p class="text-body-secondary mb-0">Rapikan jenggot kamu dengan tangan profesional.</p>
-                        </div>
-                    </div>
+                    @endforeach
                 </div>
-                <div class="col-md-6 col-lg-4 mx-auto mx-lg-0">
-                    <div class="card-layanan h-100 fade-in-up fade-in-up-3">
-                        <div class="card-layanan-img-wrap">
-                            <img src="https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?auto=format&fit=crop&w=800&q=80"
-                                alt="Perawatan cuci dan creambath rambut">
-                        </div>
-                        <div class="p-4 text-center">
-                            <h3 class="fs-5 fw-bold mb-2">Creambath</h3>
-                            <p class="text-body-secondary mb-0">Perawatan rambut agar tetap sehat dan bersih.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            @endif
         </div>
     </section>
 
     {{-- Galeri Section --}}
-    <section id="galeri" class="py-5 position-relative">
+    <section id="galeri" class="py-5 position-relative overflow-hidden">
         <div class="blob-decor" style="width: 18rem; height: 18rem; top: -4rem; right: -5rem;"></div>
 
         <div class="container position-relative">
@@ -310,46 +262,39 @@
             <div class="row g-3">
                 <div class="col-6 col-md-4">
                     <div class="galeri-item">
-                        <img src="https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=600&q=80" alt="Hasil potongan rambut rapi">
+                        <img src="{{ asset('images/aldo.jpeg') }}" alt="Hasil potongan rambut rapi">
                     </div>
                 </div>
                 <div class="col-6 col-md-4">
                     <div class="galeri-item">
-                        <img src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=600&q=80" alt="Barber memotong rambut pelanggan">
+                        <img src="{{ asset('images/melayani.jpeg') }}" alt="Barber memotong rambut pelanggan">
                     </div>
                 </div>
                 <div class="col-6 col-md-4">
                     <div class="galeri-item">
-                        <img src="https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&w=600&q=80" alt="Peralatan cukur profesional">
+                        <img src="{{ asset('images/peralatanbarber.jpeg') }}" alt="Peralatan cukur profesional">
                     </div>
                 </div>
                 <div class="col-6 col-md-4">
                     <div class="galeri-item">
-                        <img src="https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?auto=format&fit=crop&w=600&q=80" alt="Suasana interior barbershop">
+                        <img src="{{ asset('images/amos.jpeg') }}" alt="Proses potong rambut di Ma'bung Barbershop">
                     </div>
                 </div>
                 <div class="col-6 col-md-4">
                     <div class="galeri-item">
-                        <img src="https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&w=600&q=80" alt="Proses styling rambut pelanggan">
+                        <img src="{{ asset('images/mondo.jpeg') }}" alt="Hasil styling rambut pelanggan">
                     </div>
                 </div>
                 <div class="col-6 col-md-4">
                     <div class="galeri-item">
-                        <img src="https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?auto=format&fit=crop&w=600&q=80" alt="Perawatan cuci dan creambath rambut">
+                        <img src="{{ asset('images/ongki.jpeg') }}" alt="Hasil potongan rambut modern">
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    {{-- ===================================================================
-         Testimoni Section - menampilkan ulasan ASLI dari pelanggan
-         (rating 4-5 bintang + ada teks ulasan, lihat query $testimoni di
-         routes/web.php). Kalau belum ada satupun ulasan yang memenuhi
-         syarat, jatuh ke 3 KONTEN PLACEHOLDER di bawah (@empty) supaya
-         section ini tidak kosong - otomatis tergantikan begitu ada
-         ulasan asli yang masuk.
-         =================================================================== --}}
+    {{-- Testimoni asli pelanggan, jatuh ke konten placeholder di bawah (@empty) kalau belum ada yang memenuhi syarat. --}}
     <section id="testimoni" class="py-5">
         <div class="container">
             <h2 class="fs-2 fw-bold text-center text-gold mb-5">Apa Kata Pelanggan Kami</h2>
@@ -380,8 +325,7 @@
                         </div>
                     </div>
                 @empty
-                    {{-- KONTEN PLACEHOLDER - ganti/hapus kapan saja setelah
-                         ada ulasan pelanggan asli yang masuk. --}}
+                    {{-- Konten placeholder, ganti/hapus kapan saja setelah ada ulasan asli. --}}
                     <div class="col-md-4">
                         <div class="bg-panel card-bordered-gold rounded-3 p-4 h-100 fade-in-up fade-in-up-1">
                             <div class="d-flex align-items-center gap-3 mb-3">
@@ -461,7 +405,7 @@
                     </h2>
                     <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
                         <div class="accordion-body text-body-secondary">
-                            Kami menerima pembayaran Online (QRIS, Transfer Bank, DANA, GoPay, ShopeePay) maupun
+                            Kami menerima pembayaran Online (QRIS, Transfer Bank) maupun
                             COD (bayar langsung di tempat).
                         </div>
                     </div>
@@ -514,17 +458,22 @@
         <div class="container">
             <div class="row g-4 text-center text-md-start">
                 <div class="col-md-4">
-                    <h3 class="fs-5 fw-bold text-gold mb-3"><i class="fas fa-cut"></i> Ma'bung Barbershop</h3>
+                    <h3 class="fs-5 fw-bold text-gold mb-3 d-flex align-items-center justify-content-center justify-content-md-start gap-2">
+                        <span class="brand-logo brand-logo-sm">
+                            <img src="{{ asset('images/logo.jpeg') }}" alt="Logo Ma'bung Barbershop">
+                        </span>
+                        Ma'bung Barbershop
+                    </h3>
                     <p class="text-body-secondary small mb-0">
                         Potong rambut &amp; grooming premium ala pria modern.
                     </p>
                 </div>
                 <div class="col-md-4">
                     <h3 class="fs-6 fw-bold text-white mb-3">Kontak &amp; Lokasi</h3>
-                    <p class="text-body-secondary small mb-1"><i class="bi bi-geo-alt-fill text-gold me-2"></i>Jl. Contoh Raya No. 123, Jakarta</p>
-                    <p class="text-body-secondary small mb-1"><i class="bi bi-whatsapp text-gold me-2"></i>0812-3456-7890</p>
-                    <p class="text-body-secondary small mb-3"><i class="bi bi-clock-fill text-gold me-2"></i>Setiap hari, 09.00 - 21.00 WIB</p>
-                    <a href="https://www.google.com/maps/search/?api=1&query=Jl.+Contoh+Raya+No.+123%2C+Jakarta" target="_blank" rel="noopener" class="btn btn-outline-warning btn-sm">
+                    <p class="text-body-secondary small mb-1">Jln. Martadinata / Tambayako</p>
+                    <p class="text-body-secondary small mb-1">Kota Mamuju, Sulawesi Barat</p>
+                    <p class="text-body-secondary small mb-3">Setiap hari, 10.00 - 22.00 WITA</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Jln.+Martadinata+Tambayako%2C+Kota+Mamuju%2C+Sulawesi+Barat" target="_blank" rel="noopener" class="btn btn-outline-warning btn-sm">
                         <i class="bi bi-map"></i> Buka di Google Maps
                     </a>
                 </div>
@@ -548,12 +497,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-    {{-- ========================================================= --}}
-    {{-- Efek "push": konten utama (<main>) digeser ke kanan saat   --}}
-    {{-- offcanvas menu terbuka, bukan ditutupi backdrop gelap -     --}}
-    {{-- pola yang sama dengan panel profil di halaman setelah      --}}
-    {{-- login (lihat layouts/navigation.blade.php).                --}}
-    {{-- ========================================================= --}}
+    {{-- Efek "push": <main> digeser saat offcanvas menu terbuka, bukan ditutupi backdrop gelap. --}}
     <script>
         (function () {
             var offcanvasEl = document.getElementById('menuUtama');
@@ -569,6 +513,26 @@
 
             offcanvasEl.addEventListener('hide.bs.offcanvas', function () {
                 mainContent.classList.remove('content-pushed');
+            });
+        })();
+    </script>
+
+    {{-- Navbar landing page disembunyikan total (opacity+visibility, .landing-navbar-hidden di theme.css) saat offcanvas menu terbuka. --}}
+    <script>
+        (function () {
+            var offcanvasEl = document.getElementById('menuUtama');
+            var landingNavbar = document.getElementById('landingNavbar');
+
+            if (!offcanvasEl || !landingNavbar) {
+                return;
+            }
+
+            offcanvasEl.addEventListener('show.bs.offcanvas', function () {
+                landingNavbar.classList.add('landing-navbar-hidden');
+            });
+
+            offcanvasEl.addEventListener('hide.bs.offcanvas', function () {
+                landingNavbar.classList.remove('landing-navbar-hidden');
             });
         })();
     </script>

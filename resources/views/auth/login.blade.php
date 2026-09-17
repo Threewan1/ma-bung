@@ -11,9 +11,9 @@
 
                 <!-- Logo / Icon -->
                 <div class="d-flex justify-content-center mb-2">
-                    <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center fw-bold shadow" style="width: 3.5rem; height: 3.5rem; font-size: 1.25rem;">
-                        M
-                    </div>
+                    <span class="brand-logo brand-logo-lg">
+                        <img src="{{ asset('images/logo.jpeg') }}" alt="Logo Ma'bung Barbershop">
+                    </span>
                 </div>
 
                 <!-- Nama Barbershop -->
@@ -113,7 +113,7 @@
                 </div>
 
                 <!-- Tombol -->
-                <div class="d-flex align-items-center justify-content-between mt-3">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-3">
 
                     <!-- Forgot password -->
                     @if (Route::has('password.request'))
@@ -130,7 +130,7 @@
                     <!-- Button Login -->
                     <button
                         type="submit"
-                        class="btn btn-primary btn-sm px-3 py-2"
+                        class="btn btn-primary btn-sm px-3 py-2 btn-auth-submit"
                     >
                         MASUK
                     </button>

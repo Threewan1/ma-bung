@@ -210,7 +210,6 @@ return [
         'nama_layanan' => 'nama layanan',
         'harga' => 'harga',
         'status' => 'status',
-        'status_antrian' => 'status antrian',
         'no_hp' => 'nomor WhatsApp',
         'avatar' => 'foto profil',
     ],

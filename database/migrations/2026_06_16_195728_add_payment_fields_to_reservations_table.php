@@ -16,11 +16,7 @@ return new class extends Migration
             // Menyimpan nama file bukti pembayaran yang diupload pelanggan
             $table->string('payment_proof')->nullable();
 
-            // Menyimpan status pembayaran pelanggan
-            // unpaid = belum bayar
-            // waiting_verification = menunggu verifikasi admin
-            // paid = pembayaran diterima
-            // rejected = pembayaran ditolak
+            // Status pembayaran: unpaid, waiting_verification, paid, rejected.
             $table->enum('payment_status', [
                 'unpaid',
                 'waiting_verification',

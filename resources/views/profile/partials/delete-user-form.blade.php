@@ -1,7 +1,7 @@
 <section class="d-flex flex-column gap-2">
     <header>
         <h2 class="fs-5 fw-bold text-danger mb-1">
-            <i class="fas fa-triangle-exclamation"></i> Hapus Akun
+            Hapus Akun
         </h2>
 
         <p class="text-body-secondary small mb-0">

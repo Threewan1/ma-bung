@@ -1,8 +1,11 @@
 <x-admin-layout title="Kelola Reservasi">
 
-    <h2 class="fs-2 fw-bold text-gold mb-4">
-        <i class="fas fa-calendar-check"></i> Kelola Reservasi
-    </h2>
+    {{-- Judul dibungkus bg-panel biar foto background admin tidak tembus di belakang teks. --}}
+    <div class="d-none d-md-flex justify-content-end mb-4">
+        <h2 class="admin-page-title bg-panel">
+            Kelola Reservasi
+        </h2>
+    </div>
 
     {{-- Pesan Sukses --}}
     @if(session('success'))
@@ -11,32 +14,12 @@
         </div>
     @endif
 
-    {{--
-        Reservasi dipisah per status jadi TAB (bukan satu tabel besar
-        campur semua status) supaya admin tidak perlu menyisir satu-satu
-        untuk membedakan mana yang masih perlu ditindak (Menunggu
-        Konfirmasi) dan mana yang sudah beres (Selesai). "Menunggu
-        Konfirmasi" aktif secara default karena itu yang paling butuh
-        perhatian admin duluan - kecuali datang dari card "Perlu
-        Verifikasi Pembayaran" di dashboard admin (?tab=verifikasi),
-        yang langsung membuka tab itu.
-
-        Dibungkus #reservasi-tab-content-wrapper supaya bisa dirender
-        ulang lewat AJAX (polling) - begitu barber mengubah status
-        pelayanan atau admin sendiri mengonfirmasi pembayaran, tab &
-        tabel di sini ikut ter-update tanpa reload halaman penuh (lihat
-        script di bagian bawah).
-    --}}
+    {{-- Dipisah per status jadi tab biar admin tidak perlu menyisir manual; dibungkus wrapper ini supaya bisa dirender ulang via polling (lihat script bawah). --}}
     <div id="reservasi-tab-content-wrapper">
         @include('admin.reservasi._tab-content')
     </div>
 
-    {{-- ========================================================= --}}
-    {{-- MODAL BUKTI PEMBAYARAN                                     --}}
-    {{-- Sengaja dirender di luar <table> (bukan di dalam <td>),    --}}
-    {{-- karena menaruh .modal di dalam struktur tabel adalah       --}}
-    {{-- anti-pattern yang bisa bikin perilaku modal tidak stabil.  --}}
-    {{-- ========================================================= --}}
+    {{-- Modal bukti pembayaran, sengaja di luar tabel karena modal di dalam <td> bikin perilakunya tidak stabil. --}}
     @foreach($reservations as $reservasi)
         @continue(! ($reservasi->payment_method === 'online' && $reservasi->payment_proof))
         @php
@@ -65,105 +48,57 @@
                         </p>
                     </div>
 
-                    <div class="modal-footer border-secondary-subtle">
-                        @if($paymentStatus !== 'paid')
-                            <form method="POST" action="{{ route('admin.reservasi.updatePaymentStatus', $reservasi->id) }}" class="mb-0">
+                    <div class="modal-footer border-secondary-subtle flex-column align-items-stretch gap-2">
+                        {{-- Satu-satunya jalan konfirmasi reservasi online, sengaja di sini biar admin wajib lihat bukti dulu. --}}
+                        @if($reservasi->status === 'pending')
+                            <form method="POST" action="{{ route('admin.reservasi.update', $reservasi->id) }}" class="mb-0">
                                 @csrf
-                                @method('PATCH')
-                                <input type="hidden" name="payment_status" value="paid">
-                                <button type="submit" class="btn btn-success">
-                                    <i class="fas fa-check"></i> Konfirmasi Pembayaran
+                                @method('PUT')
+                                <input type="hidden" name="status" value="confirmed">
+                                <button type="submit" class="btn btn-success w-100">
+                                    <i class="fas fa-calendar-check"></i> Konfirmasi Reservasi Ini
                                 </button>
                             </form>
                         @endif
 
-                        @if($paymentStatus !== 'rejected')
-                            <form
-                                method="POST"
-                                action="{{ route('admin.reservasi.updatePaymentStatus', $reservasi->id) }}"
-                                class="mb-0"
-                                onsubmit="return confirm('Yakin ingin menolak bukti pembayaran ini?')"
-                            >
-                                @csrf
-                                @method('PATCH')
-                                <input type="hidden" name="payment_status" value="rejected">
-                                <button type="submit" class="btn btn-outline-danger">
-                                    <i class="fas fa-times"></i> Tolak
-                                </button>
-                            </form>
-                        @endif
+                        {{-- Status pembayaran, terpisah total dari konfirmasi reservasi di atas biar tidak rancu. --}}
+                        <div class="d-flex gap-2 w-100">
+                            @if($paymentStatus !== 'paid')
+                                <form method="POST" action="{{ route('admin.reservasi.updatePaymentStatus', $reservasi->id) }}" class="mb-0 flex-fill" data-disable-on-submit>
+                                    @csrf
+                                    @method('PATCH')
+                                    <input type="hidden" name="payment_status" value="paid">
+                                    <button type="submit" class="btn btn-outline-success w-100">
+                                        <i class="fas fa-money-bill-wave"></i> Tandai Lunas
+                                    </button>
+                                </form>
+                            @endif
+
+                            @if($paymentStatus !== 'rejected')
+                                <form
+                                    method="POST"
+                                    action="{{ route('admin.reservasi.updatePaymentStatus', $reservasi->id) }}"
+                                    class="mb-0 flex-fill"
+                                    onsubmit="return konfirmasiDanNonaktifkan(this, 'Yakin ingin menolak bukti pembayaran ini?')"
+                                >
+                                    @csrf
+                                    @method('PATCH')
+                                    <input type="hidden" name="payment_status" value="rejected">
+                                    <button type="submit" class="btn btn-outline-danger w-100">
+                                        <i class="fas fa-times"></i> Tolak
+                                    </button>
+                                </form>
+                            @endif
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     @endforeach
 
-    {{-- ========================================================= --}}
-    {{-- MODAL UPLOAD FOTO BEFORE & AFTER (transformasi)            --}}
-    {{-- Hanya dirender untuk reservasi yang sudah berstatus         --}}
-    {{-- "done", di luar struktur tabel (sama seperti modal bukti    --}}
-    {{-- pembayaran di atas).                                        --}}
-    {{-- ========================================================= --}}
-    @foreach($reservations as $reservasi)
-        @continue($reservasi->status !== 'done')
+    {{-- Upload foto before/after sudah dipindah ke halaman kerja Barber. --}}
 
-        <div class="modal fade" id="transformasiModal{{ $reservasi->id }}" tabindex="-1" aria-labelledby="transformasiModal{{ $reservasi->id }}Label" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content bg-panel">
-                    <form method="POST" action="{{ route('admin.reservasi.uploadTransformasi', $reservasi->id) }}" enctype="multipart/form-data">
-                        @csrf
-
-                        <div class="modal-header border-secondary-subtle">
-                            <h5 class="modal-title text-gold" id="transformasiModal{{ $reservasi->id }}Label">
-                                Foto Before &amp; After - {{ $reservasi->user->name }}
-                            </h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Tutup"></button>
-                        </div>
-
-                        <div class="modal-body">
-                            <div class="row g-3">
-                                <div class="col-6">
-                                    <label class="form-label small text-body-secondary">Foto Before</label>
-                                    @if($reservasi->foto_before)
-                                        <img src="{{ asset('storage/' . $reservasi->foto_before) }}" class="img-fluid rounded-3 mb-2" alt="Foto before {{ $reservasi->user->name }}">
-                                    @endif
-                                    <input type="file" name="foto_before" accept="image/*" class="form-control form-control-sm">
-                                </div>
-                                <div class="col-6">
-                                    <label class="form-label small text-body-secondary">Foto After</label>
-                                    @if($reservasi->foto_after)
-                                        <img src="{{ asset('storage/' . $reservasi->foto_after) }}" class="img-fluid rounded-3 mb-2" alt="Foto after {{ $reservasi->user->name }}">
-                                    @endif
-                                    <input type="file" name="foto_after" accept="image/*" class="form-control form-control-sm">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="modal-footer border-secondary-subtle">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-upload"></i> Simpan
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    @endforeach
-
-    {{--
-        Live-sync: begitu barber mengubah status pelayanan (Sedang
-        Dilayani/Selesai) di halamannya sendiri, atau admin mengonfirmasi
-        pembayaran, tab & tabel di halaman ini ikut ter-update otomatis
-        tanpa reload - dengan cara poll endpoint JSON ringan tiap 15 detik
-        (cuma id+status+payment_status semua reservasi, murah), dan HANYA
-        kalau ada yang benar-benar berubah, ambil ulang HTML tab (partial
-        _tab-content.blade.php yang sama dipakai render awal) lalu ganti
-        isi wrapper-nya - supaya reservasi otomatis pindah ke tab status
-        yang benar & badge Bukti Bayar/dst selalu akurat, bukan cuma
-        tempelan update sebagian. Tab & filter metode pembayaran yang
-        sedang aktif diingat dulu sebelum diganti, lalu diterapkan lagi
-        setelahnya supaya admin tidak "terlempar" balik ke tab default.
-    --}}
+    {{-- Live-sync: poll signature ringan tiap 15 detik, kalau berubah ambil ulang HTML tab & terapkan lagi state tab/filter yang sedang aktif. --}}
     <script>
         (function () {
             var statusUrl = '{{ route('admin.reservasi.statusUpdates') }}';
@@ -207,18 +142,28 @@
                     pane.classList.remove('show', 'active');
                 });
 
-                if (state.tabBtnId) {
-                    var btn = document.getElementById(state.tabBtnId);
-                    if (btn) {
-                        btn.classList.add('active');
-                        btn.setAttribute('aria-selected', 'true');
-                    }
-                }
+                var btn = state.tabBtnId ? document.getElementById(state.tabBtnId) : null;
 
-                if (state.tabPaneId) {
-                    var pane = document.getElementById(state.tabPaneId);
-                    if (pane) {
-                        pane.classList.add('show', 'active');
+                if (btn) {
+                    btn.classList.add('active');
+                    btn.setAttribute('aria-selected', 'true');
+
+                    if (state.tabPaneId) {
+                        var pane = document.getElementById(state.tabPaneId);
+                        if (pane) {
+                            pane.classList.add('show', 'active');
+                        }
+                    }
+                } else {
+                    // Tab yang sebelumnya aktif sudah hilang dari DOM (badge-nya jadi 0), jatuhkan ke "Menunggu Konfirmasi".
+                    var defaultBtn = document.getElementById('tab-pending-btn');
+                    var defaultPane = document.getElementById('tab-pending');
+                    if (defaultBtn) {
+                        defaultBtn.classList.add('active');
+                        defaultBtn.setAttribute('aria-selected', 'true');
+                    }
+                    if (defaultPane) {
+                        defaultPane.classList.add('show', 'active');
                     }
                 }
 
@@ -289,6 +234,42 @@
 
             pasangListenerFilter();
             setInterval(cekPerubahan, 15000);
+        })();
+    </script>
+
+    {{-- Cegah double-submit tombol yang memicu email (Tandai Lunas/Tolak/dropdown status) - dipisah dari script polling di atas karena itu early-return kalau wrapper tidak ada. --}}
+    <script>
+        (function () {
+            function nonaktifkanTombolSubmit(form, teks) {
+                var btn = form.querySelector('button[type="submit"]');
+                if (!btn || btn.disabled) {
+                    return;
+                }
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> ' + (teks || 'Memproses...');
+            }
+
+            // Dipanggil dari onsubmit="" form "Tolak" - confirm() dulu, baru nonaktifkan tombol kalau admin klik OK.
+            window.konfirmasiDanNonaktifkan = function (form, pesan) {
+                if (!confirm(pesan)) {
+                    return false;
+                }
+                nonaktifkanTombolSubmit(form);
+                return true;
+            };
+
+            // PENTING: submit() dulu, baru disable - select yang sudah disabled tidak ikut terkirim (ini bug yang pernah kejadian).
+            window.nonaktifkanSelectDanKirim = function (select) {
+                select.form.submit();
+                select.disabled = true;
+            };
+
+            // Form tanpa dialog konfirmasi cukup ditandai data-disable-on-submit, satu listener ini menangani semuanya.
+            document.addEventListener('submit', function (e) {
+                if (e.target.matches('[data-disable-on-submit]')) {
+                    nonaktifkanTombolSubmit(e.target);
+                }
+            });
         })();
     </script>
 

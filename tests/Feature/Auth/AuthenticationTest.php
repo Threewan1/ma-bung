@@ -19,6 +19,11 @@ class AuthenticationTest extends TestCase
 
     public function test_users_can_authenticate_using_the_login_screen(): void
     {
+        // User::factory() tidak mengisi kolom "role" secara eksplisit,
+        // jadi nilainya jatuh ke default kolom di database: "pelanggan".
+        // AuthenticatedSessionController mengarahkan role selain
+        // admin/barber langsung ke dashboard pelanggan (lihat store() di
+        // controller tersebut).
         $user = User::factory()->create();
 
         $response = $this->post('/login', [
@@ -27,7 +32,7 @@ class AuthenticationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        $response->assertRedirect('/dashboard');
     }
 
     public function test_users_can_not_authenticate_with_invalid_password(): void

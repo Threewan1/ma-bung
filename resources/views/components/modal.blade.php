@@ -24,13 +24,7 @@ $maxWidth = [
 
 @if ($show)
     <script>
-        {{--
-            Dieksekusi langsung (bukan menunggu DOMContentLoaded) supaya
-            tetap berfungsi saat halaman ini dimuat lewat navigasi/submit
-            AJAX (lihat layouts/navigation.blade.php) - DOMContentLoaded
-            cuma terpicu sekali per page-load asli dan tidak akan terpicu
-            lagi saat konten disisipkan ulang lewat innerHTML.
-        --}}
+        {{-- Dieksekusi langsung (bukan nunggu DOMContentLoaded) biar tetap jalan saat dimuat lewat navigasi AJAX. --}}
         (function () {
             var modalEl = document.getElementById('{{ $name }}');
             if (modalEl) {

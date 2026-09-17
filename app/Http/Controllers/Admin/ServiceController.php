@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Service;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ServiceController extends Controller
 {
@@ -30,10 +31,17 @@ class ServiceController extends Controller
         $request->validate([
             'nama_layanan' => 'required', // wajib diisi
             'harga' => 'required|numeric', // wajib diisi dan harus angka
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
+        $data = $request->only(['nama_layanan', 'harga']);
+
+        if ($request->hasFile('foto')) {
+            $data['foto'] = $request->file('foto')->store('layanan', 'public');
+        }
+
         // Simpan data layanan ke database
-        Service::create($request->all());
+        Service::create($data);
 
         // Redirect ke halaman daftar layanan dengan pesan sukses
         return redirect()->route('admin.layanan.index')->with('success', 'Layanan berhasil ditambahkan!');
@@ -53,10 +61,20 @@ class ServiceController extends Controller
         $request->validate([
             'nama_layanan' => 'required',
             'harga' => 'required|numeric',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
+        $data = $request->only(['nama_layanan', 'harga']);
+
+        if ($request->hasFile('foto')) {
+            if ($layanan->foto) {
+                Storage::disk('public')->delete($layanan->foto);
+            }
+            $data['foto'] = $request->file('foto')->store('layanan', 'public');
+        }
+
         // Update data layanan di database
-        $layanan->update($request->all());
+        $layanan->update($data);
 
         // Redirect ke halaman daftar layanan dengan pesan sukses
         return redirect()->route('admin.layanan.index')->with('success', 'Layanan berhasil diupdate!');
@@ -65,6 +83,10 @@ class ServiceController extends Controller
     // Menghapus data layanan dari database
     public function destroy(Service $layanan)
     {
+        if ($layanan->foto) {
+            Storage::disk('public')->delete($layanan->foto);
+        }
+
         // Hapus data layanan
         $layanan->delete();
 

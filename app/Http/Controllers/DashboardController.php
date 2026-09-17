@@ -7,9 +7,7 @@ use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
-    // Tips grooming harian - satu tips ditampilkan secara acak tapi
-    // konsisten sepanjang hari yang sama (lihat pemilihan index di
-    // bawah, berdasarkan hari-ke-berapa dalam setahun).
+    // Tips grooming harian, satu tips per hari (lihat pemilihan index di bawah).
     private const GROOMING_TIPS = [
         'Cuci rambut maksimal 2-3 hari sekali agar tidak merusak kelembapan alami kulit kepala.',
         'Gunakan air hangat kuku (bukan panas) saat keramas supaya minyak alami rambut tidak hilang total.',
@@ -51,10 +49,7 @@ class DashboardController extends Controller
             ->orderBy('jam')
             ->first();
 
-        // Reminder: reservasi online yang pembayarannya belum kelar
-        // (ambil satu yang tanggalnya paling dekat, supaya gaya banner-nya
-        // konsisten dengan banner "Reservasi Segera" - satu item, satu
-        // tombol "Lihat Detail").
+        // Reminder pembayaran online yang belum kelar, ambil satu yang tanggalnya paling dekat.
         $reservasiPerluBayar = $user->reservations()
             ->with('service')
             ->where('payment_method', 'online')
@@ -78,11 +73,7 @@ class DashboardController extends Controller
             ->whereYear('tanggal', now()->year)
             ->count();
 
-        // =============================================================
-        // KARTU MEMBER DIGITAL
-        // Level ditentukan dari total riwayat reservasi berstatus
-        // "done" (selesai): Bronze 0-4, Silver 5-9, Gold 10+.
-        // =============================================================
+        // Kartu member: Bronze 0-4 kunjungan selesai, Silver 5-9, Gold 10+.
         $totalKunjungan = $user->reservations()->where('status', 'done')->count();
 
         $memberLevel = match (true) {
@@ -91,12 +82,8 @@ class DashboardController extends Controller
             default => 'bronze',
         };
 
-        // Nomor member dari ID user, diformat mis. "MB-00001"
         $nomorMember = 'MB-' . str_pad($user->id, 5, '0', STR_PAD_LEFT);
 
-        // =============================================================
-        // BADGE / ACHIEVEMENT
-        // =============================================================
         $jumlahJenisLayanan = $user->reservations()->distinct('service_id')->count('service_id');
         $bergabungBulanIni = $user->created_at->isSameMonth(now()) && $user->created_at->isSameYear(now());
 
@@ -126,13 +113,7 @@ class DashboardController extends Controller
             ];
         }
 
-        // =============================================================
-        // "WAKTUNYA POTONG LAGI!"
-        // Rata-rata interval hari antar kunjungan (dari riwayat "done"),
-        // dibandingkan dengan jumlah hari sejak kunjungan terakhir.
-        // Di-skip kalau riwayat selesai belum sampai 2 kali, atau kalau
-        // pelanggan sudah punya reservasi aktif yang dijadwalkan.
-        // =============================================================
+        // "Waktunya potong lagi": bandingkan rata-rata interval kunjungan vs hari sejak kunjungan terakhir, di-skip kalau riwayat belum 2x atau sudah ada reservasi aktif.
         $waktunyaPotongLagi = null;
 
         $tanggalSelesai = $user->reservations()
@@ -156,25 +137,14 @@ class DashboardController extends Controller
             }
         }
 
-        // =============================================================
-        // TIPS GROOMING HARIAN
-        // Index tips dipilih dari hari-ke-berapa dalam setahun, supaya
-        // tipsnya konsisten sepanjang hari yang sama tapi biasanya
-        // berbeda dari hari ke hari.
-        // =============================================================
+        // Index tips dipilih dari hari-ke-berapa dalam setahun, biar konsisten sepanjang hari yang sama.
         $tipHariIni = self::GROOMING_TIPS[now()->dayOfYear % count(self::GROOMING_TIPS)];
 
-        // =============================================================
-        // UCAPAN ULANG TAHUN
-        // Cocokkan bulan & tanggal saja (tahun diabaikan).
-        // =============================================================
+        // Cocokkan bulan & tanggal saja, tahun diabaikan.
         $ulangTahunHariIni = $user->tanggal_lahir
             && $user->tanggal_lahir->format('m-d') === now()->format('m-d');
 
-        // =============================================================
-        // GALERI TRANSFORMASI (before & after)
-        // Hanya reservasi selesai yang sudah punya KEDUA foto.
-        // =============================================================
+        // Cuma reservasi selesai yang sudah punya kedua foto.
         $galeriTransformasi = $user->reservations()
             ->with('service')
             ->where('status', 'done')

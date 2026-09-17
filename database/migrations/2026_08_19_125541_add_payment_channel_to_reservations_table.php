@@ -13,15 +13,7 @@ return new class extends Migration
     {
         Schema::table('reservations', function (Blueprint $table) {
 
-            // Menyimpan jenis pembayaran online
-            // Contoh:
-            // qris
-            // bca
-            // dana
-            // gopay
-            // shopeepay
-            //
-            // Jika COD maka nilainya NULL
+            // Jenis pembayaran online (qris/bca/dana/gopay/shopeepay), NULL kalau COD.
             $table->string('payment_channel')
                 ->nullable()
                 ->after('payment_method');

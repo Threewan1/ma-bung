@@ -1,9 +1,5 @@
 @php
-    // Data ringkas untuk panel profil (offcanvas) - dihitung di sini
-    // (bukan dikirim dari controller) karena navigation.blade.php dipakai
-    // bersama oleh beberapa halaman (dashboard, profil, layanan), jadi
-    // datanya harus selalu tersedia terlepas dari controller mana yang
-    // merender.
+    // Dihitung di sini (bukan di controller) karena partial ini dipakai bersama banyak halaman.
     $navUser = Auth::user();
 
     $navFavorit = $navUser->reservations()
@@ -17,8 +13,8 @@
 <nav class="navbar navbar-expand-sm navbar-dark navbar-floating">
     <div class="container-fluid navbar-floating-inner">
 
-        {{-- Trigger panel profil - hanya icon hamburger mengambang,
-             tanpa kotak/background pembungkus, tanpa teks/logo. --}}
+        {{-- Trigger panel profil (icon hamburger mengambang), transparan/
+             mengambang tanpa kotak pembungkus. --}}
         <div class="d-flex align-items-center gap-2">
             <button
                 class="btn btn-link text-white p-0"
@@ -38,10 +34,7 @@
      yang sekarang "position: fixed" dan transparan. --}}
 <div class="navbar-floating-spacer"></div>
 
-{{-- ========================================================= --}}
-{{-- PANEL PROFIL (OFFCANVAS) - slide dari kiri, berisi menu    --}}
-{{-- navigasi ke halaman-halaman terkait akun pelanggan.        --}}
-{{-- ========================================================= --}}
+{{-- Panel profil (offcanvas), slide dari kiri berisi menu akun pelanggan. --}}
 <div
     class="offcanvas offcanvas-start profil-offcanvas"
     tabindex="-1"
@@ -66,18 +59,17 @@
 
     <div class="offcanvas-body d-flex flex-column">
 
-        {{-- Menu navigasi - gaya baris disamakan dengan sidebar admin
-             (ikon Bootstrap Icons + highlight aktif border-kiri gold). --}}
+        {{-- Gaya baris disamakan dengan sidebar admin. --}}
         <ul class="navbar-nav gap-1 mb-3">
             <li class="nav-item">
                 <a class="nav-link offcanvas-nav-link ajax-nav-link {{ request()->routeIs('profile.edit') ? 'active' : '' }}" href="{{ route('profile.edit') }}">
-                    <i class="bi bi-person"></i> Akun
+                    Akun
                 </a>
             </li>
 
             <li class="nav-item">
                 <a class="nav-link offcanvas-nav-link ajax-nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
-                    <i class="bi bi-speedometer2"></i> Dashboard
+                    Dashboard
                 </a>
             </li>
 
@@ -91,7 +83,6 @@
                     aria-expanded="false"
                     aria-controls="collapseLayananFavorit"
                 >
-                    <i class="bi bi-heart-fill"></i>
                     <span>Layanan Favorit</span>
                     <i class="fas fa-chevron-down small offcanvas-collapse-icon"></i>
                 </button>
@@ -114,45 +105,18 @@
 
             <li class="nav-item">
                 <a class="nav-link offcanvas-nav-link ajax-nav-link {{ request()->routeIs('layanan.*') ? 'active' : '' }}" href="{{ route('layanan.index') }}">
-                    <i class="bi bi-scissors"></i> Semua Layanan &amp; Harga
+                    Semua Layanan &amp; Harga
                 </a>
             </li>
 
             <li class="nav-item">
                 <a class="nav-link offcanvas-nav-link ajax-nav-link {{ request()->routeIs('reservasi.*') ? 'active' : '' }}" href="{{ route('reservasi.index') }}">
-                    <i class="bi bi-calendar-check"></i> Semua Reservasi
+                    Semua Reservasi
                 </a>
-            </li>
-
-            {{-- Info Barbershop (collapsible, gaya sama dengan nav-link lain) --}}
-            <li class="nav-item">
-                <button
-                    class="nav-link offcanvas-nav-link offcanvas-collapse-toggle w-100"
-                    type="button"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#collapseInfoBarbershop"
-                    aria-expanded="false"
-                    aria-controls="collapseInfoBarbershop"
-                >
-                    <i class="bi bi-shop"></i>
-                    <span>Info Barbershop</span>
-                    <i class="fas fa-chevron-down small offcanvas-collapse-icon"></i>
-                </button>
-                <div class="collapse" id="collapseInfoBarbershop">
-                    <div class="offcanvas-collapse-body">
-                        <p class="text-body-secondary small mb-1">Senin - Sabtu, 09.00 - 20.00 WIB</p>
-                        <p class="text-body-secondary small mb-2">Jl. Contoh Raya No. 123, Jakarta</p>
-                        <a href="https://wa.me/6281234567890" target="_blank" rel="noopener" class="btn btn-success btn-sm w-100">
-                            Chat WhatsApp
-                        </a>
-                    </div>
-                </div>
             </li>
         </ul>
 
-        {{-- Keluar - satu-satunya form yang SENGAJA dikecualikan dari
-             AJAX (class "no-ajax-form"), karena logout memang harus
-             mengakhiri sesi dengan reload penuh. --}}
+        {{-- Satu-satunya form yang dikecualikan dari AJAX, logout harus reload penuh. --}}
         <form method="POST" action="{{ route('logout') }}" class="no-ajax-form pt-3 border-top border-secondary-subtle">
             @csrf
             <button type="submit" class="btn btn-outline-danger w-100">
@@ -160,13 +124,14 @@
             </button>
         </form>
 
+        <a href="{{ route('reservasi.create') }}" class="btn btn-primary mt-auto">
+            <i class="fas fa-calendar-check"></i> Reservasi Sekarang
+        </a>
+
     </div>
 </div>
 
-{{-- ========================================================= --}}
-{{-- Efek "push": konten utama (<main>) digeser ke kanan saat   --}}
-{{-- offcanvas profil terbuka, bukan ditutupi backdrop gelap.   --}}
-{{-- ========================================================= --}}
+{{-- Efek "push": <main> digeser ke kanan saat offcanvas profil terbuka, bukan ditutupi backdrop gelap. --}}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         var offcanvasEl = document.getElementById('profilOffcanvas');
@@ -186,35 +151,16 @@
     });
 </script>
 
-{{-- ========================================================= --}}
-{{-- NAVIGASI AJAX (pjax sederhana)                              --}}
-{{-- SEMUA link internal DAN form (kecuali Keluar) di-intercept: --}}
-{{-- fetch/submit ke tujuan, ambil #main-content dari hasilnya,  --}}
-{{-- lalu ganti isi #main-content di halaman saat ini. Navbar &  --}}
-{{-- offcanvas sendiri ada DI LUAR #main-content, jadi tidak     --}}
-{{-- pernah ikut ter-refresh/tertutup apa pun yang dibuka.       --}}
-{{-- ========================================================= --}}
+{{-- Navigasi AJAX (pjax sederhana): semua link & form (kecuali Keluar) di-intercept, #main-content diganti tanpa reload, navbar/offcanvas di luar itu jadi tidak pernah ikut ter-refresh. --}}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        {{--
-            PENTING: harus menunggu DOMContentLoaded. navigation.blade.php
-            di-include SEBELUM <main id="main-content"> di layouts/app.blade.php,
-            jadi kalau kode ini dijalankan langsung (IIFE tanpa menunggu event
-            ini), document.getElementById('main-content') masih null saat
-            script ini dieksekusi - akibatnya event listener di bawah tidak
-            pernah terpasang sama sekali, dan link/form kembali melakukan
-            navigasi/submit browser biasa (full reload -> flicker + offcanvas
-            ikut tertutup).
-        --}}
+        {{-- Harus nunggu DOMContentLoaded, soalnya partial ini di-include sebelum <main id="main-content"> ada di DOM. --}}
         var mainContent = document.getElementById('main-content');
         if (!mainContent) {
             return;
         }
 
-        // Script di dalam konten baru tidak otomatis jalan kalau
-        // disisipkan lewat innerHTML - jadi setiap <script> di dalam
-        // #main-content yang baru harus dibuat ulang elemennya supaya
-        // browser benar-benar mengeksekusinya.
+        // Script yang disisipkan lewat innerHTML tidak otomatis jalan, jadi elemennya harus dibuat ulang.
         function reRunScripts(container) {
             var oldScripts = container.querySelectorAll('script');
             oldScripts.forEach(function (oldScript) {
@@ -228,9 +174,7 @@
             });
         }
 
-        // Sinkronkan status "active" pada link .ajax-nav-link sesuai
-        // URL yang sedang tampil, karena navbar/offcanvas tidak ikut
-        // di-render ulang oleh server saat navigasi AJAX.
+        // Navbar/offcanvas tidak ikut dirender ulang server, jadi status "active" disinkronkan manual di sini.
         function syncActiveLinks(path) {
             document.querySelectorAll('.ajax-nav-link').forEach(function (link) {
                 if (link.pathname === path) {
@@ -241,15 +185,7 @@
             });
         }
 
-        // Bootstrap menaruh backdrop modal (dan class/style "modal-open"
-        // di <body>) di LUAR #main-content - jadi kalau ada modal yang
-        // masih terbuka saat form di dalamnya di-submit (mis. modal
-        // Rating, modal konfirmasi Hapus Akun), meng-innerHTML ulang
-        // #main-content TIDAK ikut membersihkan backdrop & style body
-        // itu. Backdrop yang nyangkut ini menutupi seluruh halaman dan
-        // memblokir semua klik/scroll sampai halaman di-refresh manual.
-        // Dipanggil sebelum setiap penggantian #main-content supaya sisa
-        // itu selalu dibersihkan, apa pun modal yang sebelumnya terbuka.
+        // Backdrop modal Bootstrap ada di luar #main-content, jadi tidak ikut kebersihkan saat innerHTML diganti - dipanggil sebelum tiap penggantian biar tidak nyangkut nge-block klik/scroll.
         function bersihkanSisaModal() {
             document.querySelectorAll('.modal-backdrop').forEach(function (backdrop) {
                 backdrop.remove();
@@ -259,19 +195,14 @@
             document.body.style.removeProperty('padding-right');
         }
 
-        // Menerapkan HTML hasil fetch/submit ke #main-content halaman
-        // yang sedang tampil, dipakai bersama oleh navigasi link (GET)
-        // maupun submit form (POST/PUT/PATCH/DELETE via method-spoofing).
+        // Dipakai bersama navigasi link (GET) dan submit form (POST/PUT/PATCH/DELETE).
         function applyResponse(html, finalUrl, pushHistory) {
             var parser = new DOMParser();
             var newDoc = parser.parseFromString(html, 'text/html');
             var newContent = newDoc.getElementById('main-content');
 
             if (!newContent) {
-                // Halaman tujuan belum pakai layout dengan #main-content
-                // (mis. ke-redirect ke halaman login karena sesi habis) -
-                // fallback ke navigasi normal daripada menampilkan
-                // halaman kosong.
+                // Halaman tujuan tidak punya #main-content (mis. redirect ke login), fallback ke navigasi biasa.
                 window.location.href = finalUrl;
                 return;
             }
@@ -298,11 +229,7 @@
             fetch(url, {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
-                    // Accept eksplisit "text/html" - kalau tidak, Laravel
-                    // menganggap request ini "expectsJson()" (karena ada
-                    // header X-Requested-With) dan akan membalas error
-                    // validasi sebagai JSON 422, bukan redirect-back HTML
-                    // yang bisa kita proses seperti navigasi biasa.
+                    // Wajib "text/html" eksplisit, kalau tidak Laravel balas error validasi sebagai JSON 422.
                     'Accept': 'text/html',
                 },
                 credentials: 'same-origin',
@@ -313,9 +240,7 @@
                     });
                 })
                 .catch(function () {
-                    // Kalau fetch gagal (mis. sesi habis / network error),
-                    // jatuhkan ke navigasi browser biasa supaya pelanggan
-                    // tidak terjebak di halaman kosong.
+                    // Fetch gagal (sesi habis/network error) -> fallback navigasi biasa.
                     window.location.href = url;
                 });
         }
@@ -325,9 +250,7 @@
             var url = form.getAttribute('action') || window.location.href;
 
             fetch(url, {
-                // HTML form cuma bisa GET/POST asli - method PUT/PATCH/
-                // DELETE dikirim via field tersembunyi _method (method
-                // spoofing bawaan Laravel), jadi transport-nya tetap POST.
+                // Transport tetap POST, PUT/PATCH/DELETE dikirim via field _method (method spoofing Laravel).
                 method: 'POST',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
@@ -342,21 +265,14 @@
                     });
                 })
                 .catch(function () {
-                    // Fallback: submit form asli (full reload) kalau
-                    // fetch gagal total.
+                    // Fetch gagal total -> submit form asli (full reload).
                     form.submit();
                 });
         }
 
-        // Menangkap SEMUA link internal di halaman (bukan cuma yang
-        // ditandai .ajax-nav-link) - jadi offcanvas tidak pernah ikut
-        // tertutup/reload apa pun yang dibuka pelanggan (mis. tombol
-        // "Detail", "Buat Reservasi Baru", "Kembali ke Dashboard", dll
-        // yang berupa link <a> biasa).
+        // Menangkap SEMUA link internal (bukan cuma .ajax-nav-link), biar offcanvas tidak ikut tertutup/reload.
         document.addEventListener('click', function (e) {
-            // Klik kanan / klik tengah / Ctrl|Cmd|Shift|Alt+klik berarti
-            // pelanggan sengaja mau buka di tab baru - biarkan browser
-            // yang menangani, jangan di-intercept.
+            // Klik kanan/tengah/Ctrl/Cmd/Shift/Alt+klik = sengaja buka tab baru, biarkan browser yang urus.
             if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
                 return;
             }
@@ -366,8 +282,7 @@
                 return;
             }
 
-            // Lewati link eksternal, tab baru, atau yang bukan navigasi
-            // halaman biasa (anchor/#, mailto:, tel:, javascript:).
+            // Lewati link eksternal, tab baru, anchor/#, mailto:, tel:, javascript:.
             if (
                 link.target === '_blank' ||
                 link.hasAttribute('download') ||
@@ -382,9 +297,7 @@
             loadPage(link.href, true);
         });
 
-        // Menangkap SEMUA form di halaman (Buat Reservasi, Batalkan,
-        // Update Profil, Update Password, Hapus Akun, Upload Bukti
-        // Pembayaran, Rating) KECUALI form Keluar (class "no-ajax-form").
+        // Menangkap semua form di halaman kecuali yang class "no-ajax-form" (Keluar).
         document.addEventListener('submit', function (e) {
             var form = e.target;
 
@@ -392,10 +305,7 @@
                 return;
             }
 
-            // Kalau handler lain (mis. onsubmit="return confirm(...)"
-            // pada tombol Batalkan/Hapus) sudah membatalkan submit ini
-            // duluan - misalnya karena pelanggan klik "Cancel" di dialog
-            // konfirmasi - jangan tetap dipaksa submit lewat AJAX.
+            // Kalau handler lain (mis. confirm() di tombol Batalkan) sudah membatalkan submit ini, jangan dipaksa lewat AJAX.
             if (e.defaultPrevented) {
                 return;
             }

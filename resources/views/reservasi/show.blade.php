@@ -1,8 +1,12 @@
 <x-app-layout>
     <div class="container" style="max-width: 550px; padding-top: 1.1rem; padding-bottom: 1.25rem;">
         <h2 class="fs-4 fw-bold text-gold mb-3">
-            <i class="fas fa-info-circle"></i> Detail Reservasi
+            Detail Reservasi
         </h2>
+
+        @if(session('success'))
+            <div class="alert alert-success">{{ session('success') }}</div>
+        @endif
 
         <div class="bg-panel px-4 py-2 rounded-3 shadow">
 
@@ -36,7 +40,7 @@
                 <div class="d-flex justify-content-between border-bottom border-secondary-subtle reservasi-detail-row">
                     <span class="text-body-secondary">Harga</span>
                     <span class="fw-bold text-gold">
-                        Rp {{ number_format($reservasi->service->harga, 0, ',', '.') }}
+                        Rp {{ number_format($reservasi->harga_snapshot, 0, ',', '.') }}
                     </span>
                 </div>
 
@@ -58,9 +62,7 @@
                     <span class="fw-bold">{{ $reservasi->catatan ?? '-' }}</span>
                 </div>
 
-                {{-- =============================== --}}
                 {{-- METODE PEMBAYARAN --}}
-                {{-- =============================== --}}
                 <div class="d-flex justify-content-between border-bottom border-secondary-subtle reservasi-detail-row">
                     <span class="text-body-secondary">Metode Pembayaran</span>
 
@@ -69,48 +71,18 @@
                     </span>
                 </div>
 
-                {{-- =============================== --}}
                 {{-- STATUS PEMBAYARAN --}}
-                {{-- =============================== --}}
                 <div class="d-flex justify-content-between border-bottom border-secondary-subtle reservasi-detail-row">
 
                     <span class="text-body-secondary">Status Pembayaran</span>
 
                     @php
-                        $paymentStatus = strtolower($reservasi->payment_status ?? 'unpaid');
+                        $paymentBadge = $reservasi->payment_badge;
                     @endphp
 
-                    @if($paymentStatus == 'unpaid')
-
-                        <span class="badge text-bg-danger">
-                            Belum Bayar
-                        </span>
-
-                    @elseif($paymentStatus == 'waiting_verification')
-
-                        <span class="badge text-bg-warning">
-                            Menunggu Verifikasi
-                        </span>
-
-                    @elseif(in_array($paymentStatus, ['paid','success','settlement']))
-
-                        <span class="badge text-bg-success">
-                            Lunas
-                        </span>
-
-                    @elseif(in_array($paymentStatus, ['rejected','failed','deny','cancel','expired']))
-
-                        <span class="badge text-bg-danger">
-                            Ditolak
-                        </span>
-
-                    @else
-
-                        <span class="badge text-bg-secondary">
-                            {{ ucfirst($paymentStatus) }}
-                        </span>
-
-                    @endif
+                    <span class="badge text-bg-{{ $paymentBadge[0] }}">
+                        {{ $paymentBadge[2] }}
+                    </span>
 
                 </div>
 
@@ -136,10 +108,7 @@
                 </div>
             </div>
 
-            {{-- ========================================= --}}
-            {{-- BUKTI PEMBAYARAN --}}
-            {{-- Hanya untuk metode pembayaran Online -      --}}
-            {{-- ========================================= --}}
+            {{-- BUKTI PEMBAYARAN, hanya untuk metode pembayaran Online. --}}
 
             @if($reservasi->payment_method == 'online')
 
@@ -169,6 +138,7 @@
                         method="POST"
                         enctype="multipart/form-data"
                         class="mt-3"
+                        data-disable-on-submit
                     >
 
                         @csrf
@@ -208,4 +178,24 @@
             </a>
         </div>
     </div>
+
+    {{-- Cegah double-submit tombol "Upload Bukti Pembayaran". --}}
+    <script>
+        (function () {
+            function nonaktifkanTombolSubmit(form, teks) {
+                var btn = form.querySelector('button[type="submit"]');
+                if (!btn || btn.disabled) {
+                    return;
+                }
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> ' + (teks || 'Memproses...');
+            }
+
+            document.addEventListener('submit', function (e) {
+                if (e.target.matches('[data-disable-on-submit]')) {
+                    nonaktifkanTombolSubmit(e.target);
+                }
+            });
+        })();
+    </script>
 </x-app-layout>

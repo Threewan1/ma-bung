@@ -1,8 +1,11 @@
 <x-admin-layout title="Kelola Barber">
 
-    <h2 class="fs-2 fw-bold text-gold mb-4">
-        <i class="fas fa-user-tie"></i> Kelola Barber
-    </h2>
+    {{-- Judul di pojok kanan atas, sama gaya dengan header halaman admin lain. --}}
+    <div class="d-flex justify-content-end mb-4">
+        <h2 class="admin-page-title bg-panel">
+            Kelola Barber
+        </h2>
+    </div>
 
     {{-- Pesan Sukses --}}
     @if(session('success'))
@@ -13,7 +16,6 @@
 
     @if($barbers->isEmpty())
         <div class="bg-panel p-5 rounded-3 text-center text-body-secondary">
-            <i class="fas fa-user-tie fa-3x mb-3"></i>
             <p class="mb-0">Belum ada data barber.</p>
         </div>
     @else

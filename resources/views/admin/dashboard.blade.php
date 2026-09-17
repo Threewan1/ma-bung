@@ -1,10 +1,10 @@
 <x-admin-layout title="Dashboard Admin">
 
-    {{-- Elemen dekoratif blur gold-amber --}}
-    <div class="blob-decor" style="width: 20rem; height: 20rem; top: -4rem; right: -5rem;"></div>
-    <div class="blob-decor" style="width: 16rem; height: 16rem; bottom: -4rem; left: 10rem;"></div>
+    <div class="position-relative overflow-hidden">
 
-    <div class="position-relative">
+        {{-- Elemen dekoratif blur gold-amber --}}
+        <div class="blob-decor" style="width: 20rem; height: 20rem; top: -4rem; right: -5rem;"></div>
+        <div class="blob-decor" style="width: 16rem; height: 16rem; bottom: -4rem; left: 10rem;"></div>
 
     {{-- Kartu Statistik --}}
     <div class="row g-4 mb-4">
@@ -12,8 +12,7 @@
         {{-- Total Reservasi --}}
         <div class="col-6 col-lg-3">
             <div class="admin-stat-card bg-panel p-4 rounded-3 shadow text-center h-100 fade-in-up fade-in-up-1">
-                <i class="fas fa-calendar-check fa-2x text-gold mb-3"></i>
-                <h3 class="fs-5 fw-bold mb-1">Total Reservasi</h3>
+                <h3 class="admin-stat-card-title fw-bold mb-1">Total Reservasi</h3>
                 <p class="display-6 fw-bold text-gold mb-0" data-stat="totalReservasi" data-count-target="{{ $totalReservasi }}">0</p>
             </div>
         </div>
@@ -21,8 +20,7 @@
         {{-- Total Layanan --}}
         <div class="col-6 col-lg-3">
             <div class="admin-stat-card bg-panel p-4 rounded-3 shadow text-center h-100 fade-in-up fade-in-up-2">
-                <i class="fas fa-cut fa-2x text-gold mb-3"></i>
-                <h3 class="fs-5 fw-bold mb-1">Total Layanan</h3>
+                <h3 class="admin-stat-card-title fw-bold mb-1">Total Layanan</h3>
                 <p class="display-6 fw-bold text-gold mb-0" data-stat="totalLayanan" data-count-target="{{ $totalLayanan }}">0</p>
             </div>
         </div>
@@ -30,8 +28,7 @@
         {{-- Antrian Hari Ini --}}
         <div class="col-6 col-lg-3">
             <div class="admin-stat-card bg-panel p-4 rounded-3 shadow text-center h-100 fade-in-up fade-in-up-3">
-                <i class="fas fa-users fa-2x text-gold mb-3"></i>
-                <h3 class="fs-5 fw-bold mb-1">Antrian Hari Ini</h3>
+                <h3 class="admin-stat-card-title fw-bold mb-1">Antrian Hari Ini</h3>
                 <p class="display-6 fw-bold text-gold mb-0" data-stat="antrianHariIni" data-count-target="{{ $antrianHariIni }}">0</p>
             </div>
         </div>
@@ -39,47 +36,38 @@
         {{-- Kapasitas Hari Ini --}}
         <div class="col-6 col-lg-3">
             <div class="admin-stat-card bg-panel p-4 rounded-3 shadow text-center h-100 fade-in-up fade-in-up-4">
-                <i class="fas fa-gauge-high fa-2x text-gold mb-3"></i>
-                <h3 class="fs-5 fw-bold mb-1">Kapasitas Hari Ini</h3>
-                <p class="fs-3 fw-bold text-gold mb-0">
+                <h3 class="admin-stat-card-title fw-bold mb-1">Kapasitas Hari Ini</h3>
+                <p class="admin-stat-card-value fw-bold text-gold mb-0">
                     <span data-stat="kapasitasText">{{ $slotTerisiHariIni }}/{{ $totalSlotHariIni }}</span>
-                    <span class="fs-6 fw-normal text-body-secondary d-block">slot terisi</span>
+                    <span class="admin-stat-card-subvalue fw-normal text-body-secondary d-block">slot terisi</span>
                 </p>
             </div>
         </div>
 
-        {{-- Menunggu Konfirmasi - aksen warning, perlu ditindak.
-             Bisa diklik, mengarah ke tab "Menunggu Konfirmasi" (default)
-             di halaman Kelola Reservasi. --}}
+        {{-- Bisa diklik, mengarah ke tab "Menunggu Konfirmasi" di Kelola Reservasi. --}}
         <div class="col-6 col-lg-3">
             <a
                 href="{{ route('admin.reservasi.index') }}"
-                class="admin-stat-card admin-stat-card-warning admin-stat-card-link border-warning border-2 bg-panel p-4 rounded-3 shadow text-center text-decoration-none text-reset h-100 d-block fade-in-up fade-in-up-1"
+                class="admin-stat-card admin-stat-card-warning admin-stat-card-link bg-panel p-4 rounded-3 shadow text-center text-decoration-none text-reset h-100 d-block fade-in-up fade-in-up-1"
             >
-                <i class="fas fa-hourglass-half fa-2x text-warning mb-3"></i>
-                <h3 class="fs-5 fw-bold mb-1">Menunggu Konfirmasi</h3>
+                <h3 class="admin-stat-card-title fw-bold mb-1">Menunggu Konfirmasi</h3>
                 <p class="display-6 fw-bold text-warning mb-0" data-stat="menungguKonfirmasi" data-count-target="{{ $menungguKonfirmasi }}">0</p>
             </a>
         </div>
 
-        {{-- Perlu Verifikasi Pembayaran - aksen warning, perlu ditindak.
-             Bisa diklik, mengarah ke tab "Perlu Verifikasi Pembayaran"
-             di halaman Kelola Reservasi (lewat query ?tab=verifikasi). --}}
+        {{-- Bisa diklik, mengarah ke tab "Perlu Verifikasi Pembayaran" (?tab=verifikasi). --}}
         <div class="col-6 col-lg-3">
             <a
                 href="{{ route('admin.reservasi.index', ['tab' => 'verifikasi']) }}"
-                class="admin-stat-card admin-stat-card-warning admin-stat-card-link border-warning border-2 bg-panel p-4 rounded-3 shadow text-center text-decoration-none text-reset h-100 d-block fade-in-up fade-in-up-2"
+                class="admin-stat-card admin-stat-card-warning admin-stat-card-link bg-panel p-4 rounded-3 shadow text-center text-decoration-none text-reset h-100 d-block fade-in-up fade-in-up-2"
             >
-                <i class="fas fa-file-invoice-dollar fa-2x text-warning mb-3"></i>
-                <h3 class="fs-5 fw-bold mb-1">Perlu Verifikasi Pembayaran</h3>
+                <h3 class="admin-stat-card-title fw-bold mb-1">Perlu Verifikasi Pembayaran</h3>
                 <p class="display-6 fw-bold text-warning mb-0" data-stat="perluVerifikasiPembayaran" data-count-target="{{ $perluVerifikasiPembayaran }}">0</p>
             </a>
         </div>
 
-        {{-- Total Pendapatan Bulan Ini - aksen sukses/hijau --}}
         <div class="col-12 col-lg-6">
-            <div class="admin-stat-card admin-stat-card-success border-success border-2 bg-panel p-4 rounded-3 shadow text-center h-100 fade-in-up fade-in-up-3">
-                <i class="fas fa-sack-dollar fa-2x text-success mb-3"></i>
+            <div class="admin-stat-card admin-stat-card-success bg-panel p-4 rounded-3 shadow text-center h-100 fade-in-up fade-in-up-3">
                 <h3 class="fs-5 fw-bold mb-1">Total Pendapatan Bulan Ini</h3>
                 <p class="fs-2 fw-bold text-success mb-0" data-stat="pendapatanText">
                     Rp {{ number_format($totalPendapatanBulanIni, 0, ',', '.') }}
@@ -88,22 +76,19 @@
         </div>
     </div>
 
-    {{-- =============================================== --}}
-    {{-- RESERVASI HARI INI --}}
-    {{-- Semua reservasi tanggal hari ini (bukan sekadar 5   --}}
-    {{-- terbaru secara umum), diurutkan berdasarkan jam.     --}}
-    {{-- =============================================== --}}
+    {{-- Semua reservasi hari ini (bukan sekadar 5 terbaru), urut jam. --}}
     <div class="bg-panel rounded-3 shadow p-4 mb-4 fade-in-up">
         <h3 class="fs-4 fw-bold text-gold mb-3">
-            <i class="fas fa-calendar-day"></i> Reservasi Hari Ini
+            Reservasi Hari Ini
         </h3>
 
         @if ($reservasiHariIni->isEmpty())
-            <p class="text-body-secondary text-center py-3 mb-0">
-                Tidak ada reservasi untuk hari ini.
-            </p>
+            <div class="text-center py-5">
+                <p class="text-body-secondary mb-0">Tidak ada reservasi untuk hari ini.</p>
+            </div>
         @else
-            <div class="table-responsive rounded-3">
+            {{-- Versi tabel (desktop, >=768px) --}}
+            <div class="table-responsive rounded-3 d-none d-md-block">
             <table class="table table-dark table-hover align-middle mb-0">
                 <thead class="bg-surface">
                     <tr>
@@ -135,15 +120,41 @@
                 </tbody>
             </table>
             </div>
+
+            {{-- Versi card (mobile/tablet, <768px), biar nama panjang tetap full terbaca tanpa scroll horizontal. --}}
+            <div class="table-card-list d-block d-md-none">
+                @foreach ($reservasiHariIni as $reservasi)
+                    <div class="table-card-item">
+                        <div class="table-card-item-title">
+                            {{ $reservasi->jam }} &mdash; {{ $reservasi->user->name }}
+                        </div>
+                        <div class="table-card-item-row">
+                            <span class="table-card-item-label">Layanan</span>
+                            <span class="table-card-item-value">{{ $reservasi->service->nama_layanan }}</span>
+                        </div>
+                        <div class="table-card-item-row">
+                            <span class="table-card-item-label">Status</span>
+                            <span>
+                                @if($reservasi->status == 'pending')
+                                    <span class="badge text-bg-warning">Pending</span>
+                                @elseif($reservasi->status == 'confirmed')
+                                    <span class="badge text-bg-info">Confirmed</span>
+                                @elseif($reservasi->status == 'cancelled')
+                                    <span class="badge text-bg-danger">Cancelled</span>
+                                @elseif($reservasi->status == 'done')
+                                    <span class="badge text-bg-success">Selesai</span>
+                                @endif
+                            </span>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
         @endif
     </div>
 
-    {{-- =============================================== --}}
-    {{-- GRAFIK TREN RESERVASI 7 HARI TERAKHIR --}}
-    {{-- =============================================== --}}
     <div class="bg-panel rounded-3 shadow p-4 mb-4 fade-in-up">
         <h3 class="fs-4 fw-bold text-gold mb-3">
-            <i class="fas fa-chart-column"></i> Tren Reservasi 7 Hari Terakhir
+            Tren Reservasi 7 Hari Terakhir
         </h3>
         <div style="max-height: 280px;">
             <canvas id="trenReservasiChart" height="90"></canvas>
@@ -153,9 +164,10 @@
     {{-- Reservasi Terbaru --}}
     <div class="bg-panel rounded-3 shadow p-4 fade-in-up fade-in-up-4">
         <h3 class="fs-4 fw-bold text-gold mb-3">
-            <i class="fas fa-clock"></i> Reservasi Terbaru
+            Reservasi Terbaru
         </h3>
-        <div class="table-responsive rounded-3">
+        {{-- Versi tabel (desktop, >=768px) --}}
+        <div class="table-responsive rounded-3 d-none d-md-block">
         <table class="table table-dark table-hover align-middle mb-0">
             <thead class="bg-surface">
                 <tr>
@@ -214,6 +226,65 @@
             </tbody>
         </table>
         </div>
+
+        {{-- Versi card (mobile/tablet, <768px) --}}
+        <div class="table-card-list d-block d-md-none">
+            @forelse($reservasiTerbaru as $reservasi)
+                <div class="table-card-item" data-reservasi-row="{{ $reservasi->id }}">
+                    <div class="table-card-item-title">
+                        {{ $reservasi->user->name }}
+                    </div>
+                    <div class="table-card-item-row">
+                        <span class="table-card-item-label">Layanan</span>
+                        <span class="table-card-item-value">{{ $reservasi->service->nama_layanan }}</span>
+                    </div>
+                    <div class="table-card-item-cols">
+                        <div>
+                            <div class="table-card-item-label">Tanggal</div>
+                            <div class="table-card-item-value">{{ $reservasi->tanggal }}</div>
+                        </div>
+                        <div class="text-end">
+                            <div class="table-card-item-label">Jam</div>
+                            <div class="table-card-item-value">{{ $reservasi->jam }}</div>
+                        </div>
+                    </div>
+                    <div class="table-card-item-row" data-status-cell>
+                        <span class="table-card-item-label">Status</span>
+                        <span>
+                            @if($reservasi->status == 'pending')
+                                <span class="badge text-bg-warning">Pending</span>
+                            @elseif($reservasi->status == 'confirmed')
+                                <span class="badge text-bg-info">Confirmed</span>
+                            @elseif($reservasi->status == 'cancelled')
+                                <span class="badge text-bg-danger">Cancelled</span>
+                            @elseif($reservasi->status == 'done')
+                                <span class="badge text-bg-success">Selesai</span>
+                            @endif
+                        </span>
+                    </div>
+                    <div class="table-card-item-footer" data-aksi-cell>
+                        @if($reservasi->status == 'pending')
+                            <button
+                                type="button"
+                                class="btn btn-warning btn-sm w-100 konfirmasi-cepat-btn"
+                                data-id="{{ $reservasi->id }}"
+                                data-url="{{ route('admin.reservasi.update', $reservasi->id) }}"
+                            >
+                                <i class="fas fa-check"></i> Konfirmasi
+                            </button>
+                        @else
+                            <a href="{{ route('admin.reservasi.index') }}" class="btn btn-outline-primary btn-sm w-100">
+                                <i class="fas fa-eye"></i> Detail
+                            </a>
+                        @endif
+                    </div>
+                </div>
+            @empty
+                <div class="table-card-item text-center text-body-secondary">
+                    Belum ada reservasi
+                </div>
+            @endforelse
+        </div>
     </div>
 
     </div>
@@ -253,11 +324,7 @@
         })();
     </script>
 
-    {{-- Polling statistik: kartu di baris atas (Total Reservasi, dst)
-         di-refresh otomatis tiap 20 detik lewat endpoint JSON
-         admin.dashboard.stats, supaya angkanya ter-update sendiri kalau
-         ada reservasi baru masuk selagi admin sedang membuka dashboard
-         - tanpa perlu reload halaman manual. --}}
+    {{-- Polling tiap 20 detik biar kartu statistik ter-update sendiri tanpa reload. --}}
     <script>
         (function () {
             var statsUrl = '{{ route('admin.dashboard.stats') }}';
@@ -327,8 +394,7 @@
                         }
                     })
                     .catch(function () {
-                        // Diamkan saja kalau gagal (mis. koneksi putus sesaat) -
-                        // coba lagi otomatis di siklus polling berikutnya.
+                        // Diamkan saja, coba lagi di polling berikutnya.
                     });
             }
 
@@ -352,8 +418,8 @@
                     datasets: [{
                         label: 'Jumlah Reservasi',
                         data: @json($trenReservasi->pluck('jumlah')),
-                        backgroundColor: 'rgba(250, 204, 21, 0.7)',
-                        borderColor: '#facc15',
+                        backgroundColor: 'rgba(212, 175, 55, 0.7)',
+                        borderColor: '#d4af37',
                         borderWidth: 1,
                         borderRadius: 6,
                         maxBarThickness: 48,
@@ -388,10 +454,7 @@
         })();
     </script>
 
-    {{-- Tombol "Konfirmasi" cepat (AJAX) di tabel Reservasi Terbaru -
-         mengubah status jadi "confirmed" tanpa reload halaman, lalu
-         mengganti isi baris tabel (badge status + tombol aksi) secara
-         langsung di DOM. --}}
+    {{-- Tombol "Konfirmasi" cepat AJAX - update disebar ke versi tabel & card sekaligus (data-reservasi-row sama), biar versi yang sedang tersembunyi tidak ketinggalan state. --}}
     <script>
         (function () {
             var csrfToken = '{{ csrf_token() }}';
@@ -400,10 +463,15 @@
             document.querySelectorAll('.konfirmasi-cepat-btn').forEach(function (btn) {
                 btn.addEventListener('click', function () {
                     var url = btn.getAttribute('data-url');
-                    var originalHtml = btn.innerHTML;
+                    var id = btn.getAttribute('data-id');
 
-                    btn.disabled = true;
-                    btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+                    var matchingButtons = document.querySelectorAll('.konfirmasi-cepat-btn[data-id="' + id + '"]');
+                    var originalHtmlMap = new Map();
+                    matchingButtons.forEach(function (b) {
+                        originalHtmlMap.set(b, b.innerHTML);
+                        b.disabled = true;
+                        b.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+                    });
 
                     var formData = new FormData();
                     formData.append('_method', 'PUT');
@@ -426,26 +494,28 @@
                             return response.json();
                         })
                         .then(function () {
-                            var row = btn.closest('tr');
-                            if (!row) {
-                                return;
-                            }
+                            document.querySelectorAll('[data-reservasi-row="' + id + '"]').forEach(function (row) {
+                                var statusCell = row.querySelector('[data-status-cell]');
+                                if (statusCell) {
+                                    statusCell.innerHTML = '<span class="badge text-bg-info">Confirmed</span>';
+                                }
 
-                            var statusCell = row.querySelector('[data-status-cell]');
-                            if (statusCell) {
-                                statusCell.innerHTML = '<span class="badge text-bg-info">Confirmed</span>';
-                            }
-
-                            var aksiCell = row.querySelector('[data-aksi-cell]');
-                            if (aksiCell) {
-                                aksiCell.innerHTML =
-                                    '<a href="' + indexUrl + '" class="btn btn-outline-primary btn-sm text-nowrap">' +
-                                    '<i class="fas fa-eye"></i> Detail</a>';
-                            }
+                                var aksiCell = row.querySelector('[data-aksi-cell]');
+                                if (aksiCell) {
+                                    var detailBtnClass = row.tagName === 'TR'
+                                        ? 'btn btn-outline-primary btn-sm text-nowrap'
+                                        : 'btn btn-outline-primary btn-sm w-100';
+                                    aksiCell.innerHTML =
+                                        '<a href="' + indexUrl + '" class="' + detailBtnClass + '">' +
+                                        '<i class="fas fa-eye"></i> Detail</a>';
+                                }
+                            });
                         })
                         .catch(function () {
-                            btn.disabled = false;
-                            btn.innerHTML = originalHtml;
+                            matchingButtons.forEach(function (b) {
+                                b.disabled = false;
+                                b.innerHTML = originalHtmlMap.get(b);
+                            });
                             alert('Gagal mengonfirmasi reservasi. Silakan coba lagi.');
                         });
                 });

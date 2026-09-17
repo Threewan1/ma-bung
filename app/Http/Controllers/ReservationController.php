@@ -4,34 +4,28 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ReservationCreated;
+use App\Mail\ReservationCancelled;
 use App\Models\Barber;
 use App\Models\Reservation;
 use App\Models\Service;
 use App\Models\Queue;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-// Digunakan untuk menyimpan file ke folder storage Laravel
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class ReservationController extends Controller
 {
-    // Jam-jam operasional yang bisa dipilih pelanggan saat reservasi.
-    private const JAM_SLOTS = ['08:00', '09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
+    // Jam operasional: 10.00-22.00, istirahat 15.00-16.00.
+    private const JAM_SLOTS = ['10:00', '11:00', '12:00', '13:00', '14:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00'];
 
-    // Kapasitas per slot jam SEKARANG dihitung per-barber (satu barber
-    // cuma bisa menangani 1 reservasi per jam) - bukan angka tetap "3"
-    // lagi, tapi jumlah barber yang sedang aktif (status_aktif=true).
-    // Jam dianggap benar-benar penuh hanya kalau SEMUA barber aktif
-    // sudah terisi di jam itu.
+    // Kapasitas per jam = jumlah barber aktif (satu barber, satu reservasi per jam).
     private function jumlahBarberAktif(): int
     {
         return Barber::where('status_aktif', true)->count();
     }
 
-    // Menghitung barber_id mana saja yang sudah terisi (reservasi aktif,
-    // bukan "cancelled") di setiap slot jam untuk satu tanggal tertentu -
-    // dipakai bersama oleh endpoint AJAX jamTersedia() dan validasi
-    // ulang di store().
+    // Cari barber_id yang sudah terisi per jam di satu tanggal, dipakai jamTersedia() dan validasi ulang di store().
     private function hitungBarberTerpakaiPerJam(string $tanggal): array
     {
         return Reservation::where('tanggal', $tanggal)
@@ -43,8 +37,7 @@ class ReservationController extends Controller
             ->toArray();
     }
 
-    // Menampilkan daftar reservasi milik pelanggan yang sedang login
-    // Bisa difilter berdasarkan status lewat query string, mis. ?status=done
+    // Daftar reservasi pelanggan yang login, bisa difilter lewat ?status=done.
     public function index(Request $request)
     {
         $query = Reservation::where('user_id', Auth::id())
@@ -60,17 +53,8 @@ class ReservationController extends Controller
         return view('reservasi.index', compact('reservations'));
     }
 
-    // Endpoint JSON - dipanggil berkala (polling) oleh JS di dashboard
-    // dan halaman "Reservasi Saya" supaya status reservasi (dan status
-    // pembayaran/nomor antrian) ter-update otomatis begitu admin
-    // mengubahnya, tanpa pelanggan perlu reload halaman.
-    //
-    // "reservasiSelesaiBulanIni" DIHITUNG DI SERVER (bukan diserahkan ke
-    // JS untuk dihitung ulang dari tanggal tiap reservasi) supaya selalu
-    // konsisten dengan angka yang dipakai saat render awal halaman
-    // (DashboardController) - kalau dihitung di JS pakai jam/tanggal
-    // browser (new Date()), hasilnya bisa meleset kalau jam/zona waktu
-    // perangkat pelanggan berbeda dari server.
+    // Endpoint polling buat dashboard & "Reservasi Saya", biar status/pembayaran/antrian ter-update tanpa reload.
+    // reservasiSelesaiBulanIni dihitung di server (bukan di JS) biar tidak meleset gara-gara jam/zona waktu browser beda-beda.
     public function statusUpdates()
     {
         $reservations = Reservation::where('user_id', Auth::id())
@@ -87,31 +71,25 @@ class ReservationController extends Controller
                 'id' => $reservasi->id,
                 'status' => $reservasi->status,
                 'payment_status' => $reservasi->payment_status,
+                'payment_badge' => $reservasi->payment_badge,
                 'nomor_antrian' => $reservasi->queue?->nomor_antrian,
             ])->values(),
             'reservasiSelesaiBulanIni' => $reservasiSelesaiBulanIni,
         ]);
     }
 
-    // Menampilkan form buat reservasi baru
+    // Form buat reservasi baru.
     public function create()
     {
-        // Ambil semua layanan untuk ditampilkan di form
         $services = Service::all();
 
-        // Barber aktif untuk pilihan awal (non-aktif sebenarnya tidak
-        // pernah dikirim ke halaman ini - lihat query Barber::where
-        // status_aktif di controller/endpoint lain juga)
+        // Cuma barber aktif yang boleh dipilih.
         $barbers = Barber::where('status_aktif', true)->orderBy('nama')->get();
 
         return view('reservasi.create', compact('services', 'barbers'));
     }
 
-    // Endpoint AJAX: mengembalikan sisa slot untuk setiap jam pada
-    // tanggal tertentu, dipakai form buat reservasi supaya jam yang
-    // sudah penuh langsung tampil disabled tanpa reload halaman.
-    // Kapasitas per jam = jumlah barber yang sedang aktif (satu barber
-    // cuma menangani 1 reservasi per jam) - bukan angka tetap lagi.
+    // Endpoint AJAX: sisa slot tiap jam di 1 tanggal, dipakai form reservasi biar jam penuh langsung tampil disabled.
     public function jamTersedia(Request $request)
     {
         $request->validate([
@@ -120,25 +98,28 @@ class ReservationController extends Controller
 
         $totalBarberAktif = $this->jumlahBarberAktif();
         $barberTerpakai = $this->hitungBarberTerpakaiPerJam($request->tanggal);
+        $tanggal = $request->tanggal;
+        $sekarang = now();
 
-        $slots = collect(self::JAM_SLOTS)->map(function ($jam) use ($barberTerpakai, $totalBarberAktif) {
+        $slots = collect(self::JAM_SLOTS)->map(function ($jam) use ($barberTerpakai, $totalBarberAktif, $tanggal, $sekarang) {
             $jumlahTerpakai = count($barberTerpakai[$jam] ?? []);
             $sisa = max(0, $totalBarberAktif - $jumlahTerpakai);
+
+            // Jam yang sudah lewat (kalau tanggalnya hari ini) tidak boleh dipilih lagi.
+            $sudahLewat = \Carbon\Carbon::parse($tanggal . ' ' . $jam)->lessThanOrEqualTo($sekarang);
 
             return [
                 'jam' => $jam,
                 'sisa' => $sisa,
                 'penuh' => $sisa <= 0,
+                'sudah_lewat' => $sudahLewat,
             ];
         });
 
         return response()->json($slots);
     }
 
-    // Endpoint AJAX: mengembalikan status ketersediaan tiap barber aktif
-    // untuk tanggal+jam tertentu - dipakai form buat reservasi supaya
-    // barber yang sudah terisi di jam itu tampil disabled dengan label
-    // "Sedang Bertugas".
+    // Endpoint AJAX: ketersediaan tiap barber aktif di 1 tanggal+jam, dipakai form reservasi buat nandain "Sedang Bertugas".
     public function barberTersedia(Request $request)
     {
         $request->validate([
@@ -158,14 +139,14 @@ class ReservationController extends Controller
             ->map(fn ($barber) => [
                 'id' => $barber->id,
                 'nama' => $barber->nama,
+                'foto' => $barber->foto ? asset('storage/' . $barber->foto) : null,
                 'tersedia' => ! $barberTerpakaiIds->contains($barber->id),
             ]);
 
         return response()->json($barbers);
     }
 
-    // Menyimpan data reservasi baru ke database
-    // Menyimpan data reservasi baru ke database
+    // Menyimpan reservasi baru.
 public function store(Request $request)
 {
     $request->validate([
@@ -177,25 +158,20 @@ public function store(Request $request)
         'catatan'         => 'nullable|string',
 
         'payment_method'  => 'required|in:online,cod',
-        // Wajib memilih channel jika pembayaran online
-        'payment_channel' => 'required_if:payment_method,online|nullable|in:qris,bca,dana,gopay,shopeepay',
+        // Wajib pilih channel kalau metodenya online.
+        'payment_channel' => 'required_if:payment_method,online|nullable|in:qris,bri',
 
-        // Wajib upload bukti pembayaran kalau metode Online, tapi
-        // nullable (boleh kosong) kalau metode-nya COD.
+        // Wajib upload bukti kalau online, boleh kosong kalau COD.
         'payment_proof'   => 'required_if:payment_method,online|nullable|image|mimes:jpg,jpeg,png|max:2048',
 
     ], [
         'barber_id.required' => 'Silakan pilih barber terlebih dahulu.',
         'barber_id.exists' => 'Barber yang dipilih tidak valid.',
         'payment_proof.required_if' => 'Bukti pembayaran wajib diunggah untuk metode pembayaran Online.',
-        'payment_channel.required_if' => 'Silakan pilih salah satu metode pembayaran online (QRIS/Transfer Bank/DANA/GoPay/ShopeePay).',
+        'payment_channel.required_if' => 'Silakan pilih salah satu metode pembayaran online (QRIS/Transfer Bank).',
     ]);
 
-    // Cek ulang ketersediaan BARBER YANG DIPILIH di sisi backend (bukan
-    // cuma andalkan AJAX di frontend) supaya tidak kena race condition -
-    // misalnya dua pelanggan sama-sama submit barber & jam yang sama
-    // nyaris bersamaan. Reservasi yang statusnya "cancelled" tidak
-    // dihitung, jadi slot-nya kembali tersedia untuk pelanggan lain.
+    // Cek ulang di backend (bukan cuma andalkan AJAX) biar tidak race condition kalau 2 pelanggan submit barber+jam yang sama bersamaan.
     $barberSudahTerisi = Reservation::where('tanggal', $request->tanggal)
         ->where('jam', $request->jam)
         ->where('barber_id', $request->barber_id)
@@ -208,99 +184,71 @@ public function store(Request $request)
         ])->withInput();
     }
 
-    // Default bukti pembayaran kosong.
-    // Digunakan jika pelanggan memilih metode COD.
-    $paymentProofPath = null;
-
-    // Jika pelanggan mengupload bukti pembayaran,
-    // simpan file ke folder storage/app/public/payment_proofs
-    if ($request->hasFile('payment_proof')) {
-
-        $paymentProofPath = $request->file('payment_proof')
-            ->store('payment_proofs', 'public');
-
+    // Cek ulang di backend, jangan cuma andalkan disable di frontend yang bisa ketinggalan waktu.
+    if (\Carbon\Carbon::parse($request->tanggal . ' ' . $request->jam)->lessThanOrEqualTo(now())) {
+        return back()->withErrors([
+            'jam' => 'Jam yang dipilih sudah lewat. Silakan pilih jam lain.',
+        ])->withInput();
     }
 
-    // Menentukan status pembayaran berdasarkan metode pembayaran.
-    // Online  -> Menunggu verifikasi admin.
-    // COD     -> Belum dibayar.
+    // COD tidak upload bukti, jadi default-nya kosong.
+    $paymentProofPath = null;
+
+    if ($request->hasFile('payment_proof')) {
+        $paymentProofPath = $request->file('payment_proof')
+            ->store('payment_proofs', 'public');
+    }
+
+    // Online nunggu diverifikasi admin, COD dianggap belum bayar dulu.
     $paymentStatus = $request->payment_method == 'online'
         ? 'waiting_verification'
         : 'unpaid';
 
-    // Simpan reservasi dulu
     $reservation = Reservation::create([
-
-        // ID pelanggan yang login
         'user_id'    => Auth::id(),
-
-        // Layanan yang dipilih
         'service_id' => $request->service_id,
 
-        // Barber yang dipilih pelanggan
+        // Simpan harga saat ini biar tidak ikut berubah kalau harga layanan diedit belakangan.
+        'harga_snapshot' => Service::find($request->service_id)?->harga,
+
         'barber_id' => $request->barber_id,
-
-        // Tanggal reservasi
         'tanggal'    => $request->tanggal,
-
-        // Jam reservasi
         'jam'        => $request->jam,
-
-        // Catatan pelanggan
         'catatan' => $request->catatan,
-
-        // Metode pembayaran yang dipilih.
-        // Nilai:
-        // online
-        // atau
-        // cod
         'payment_method' => $request->payment_method,
 
-        // Channel pembayaran yang dipilih.
-        // Jika COD maka nilainya NULL.
+        // NULL kalau COD, karena cuma pembayaran online yang punya channel.
         'payment_channel' => $request->payment_method == 'online'
             ? $request->payment_channel
             : null,
 
-        // Lokasi file bukti pembayaran.
-        // Akan bernilai NULL jika pelanggan memilih COD.
         'payment_proof' => $paymentProofPath,
-
-        // Status pembayaran.
-        // Online  -> waiting_verification
-        // COD     -> unpaid
         'payment_status' => $paymentStatus,
-
-        // Status reservasi
         'status' => 'pending',
     ]);
 
-    // Ambil semua reservasi aktif di tanggal yang sama, urutkan berdasarkan jam
-    $reservasiAktif = Reservation::where('tanggal', $request->tanggal)
-        ->where('status', '!=', 'cancelled') // tidak termasuk yang dibatalkan
-        ->orderBy('jam', 'asc') // urutkan dari jam terkecil ke terbesar
-        ->get();
+    // Hitung ulang nomor antrian di tanggal ini (termasuk reservasi baru ini).
+    Queue::aturUlangNomorAntrian($request->tanggal);
 
-    // Update nomor antrian semua reservasi di tanggal tersebut
-    foreach ($reservasiAktif as $index => $res) {
-        Queue::updateOrCreate(
-            ['reservation_id' => $res->id], // cari berdasarkan reservation_id
-            ['nomor_antrian'  => $index + 1, 'status_antrian' => 'menunggu'] // update nomornya
-        );
-    }
-
-    // Ambil nomor antrian reservasi yang baru dibuat
     $nomorAntrian = Queue::where('reservation_id', $reservation->id)
         ->value('nomor_antrian');
-    
-    Mail::to(Auth::user()->email)
-        ->send(new ReservationCreated($reservation, $nomorAntrian));
+
+    // Butuh queue worker jalan supaya emailnya benar-benar terkirim, dibungkus try-catch biar reservasinya tetap tersimpan walau pengiriman gagal.
+    try {
+        Mail::to(Auth::user()->email)
+            ->queue(new ReservationCreated($reservation, $nomorAntrian));
+    } catch (\Throwable $e) {
+        Log::error('Gagal mengirim email ReservationCreated', [
+            'reservasi_id' => $reservation->id,
+            'error' => $e->getMessage(),
+        ]);
+    }
 
     return redirect()->route('reservasi.index')
         ->with('success', 'Reservasi berhasil dibuat! Nomor antrian kamu: ' . $nomorAntrian);
 }
 
-    // Menampilkan detail reservasi
+    // Detail satu reservasi.
     public function show(Reservation $reservasi)
     {
         if ($reservasi->user_id !== Auth::id()) {
@@ -309,18 +257,72 @@ public function store(Request $request)
         return view('reservasi.show', compact('reservasi'));
     }
 
-    // Membatalkan reservasi
+    // Membatalkan reservasi.
     public function destroy(Reservation $reservasi)
     {
         if ($reservasi->user_id !== Auth::id()) {
             abort(403);
         }
+
+        // Yang sudah "done" tidak boleh dibatalkan lagi.
+        if ($reservasi->status === 'done') {
+            return redirect()->route('reservasi.index')
+                ->with('error', 'Reservasi yang sudah selesai tidak bisa dibatalkan.');
+        }
+
+        // Cek dulu sebelum update, biar tidak kirim email pembatalan dobel kalau ternyata sudah cancelled.
+        $sudahDibatalkan = $reservasi->status === 'cancelled';
+
         $reservasi->update(['status' => 'cancelled']);
+
+        // Hitung ulang nomor antrian sisa reservasi aktif di tanggal yang sama.
+        Queue::aturUlangNomorAntrian($reservasi->tanggal);
+
+        if (! $sudahDibatalkan) {
+            try {
+                Mail::to($reservasi->user->email)
+                    ->queue(new ReservationCancelled($reservasi));
+            } catch (\Throwable $e) {
+                Log::error('Gagal mengirim email ReservationCancelled', [
+                    'reservasi_id' => $reservasi->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
         return redirect()->route('reservasi.index')
             ->with('success', 'Reservasi berhasil dibatalkan!');
     }
 
-    // Menyimpan rating & review pelanggan untuk reservasi yang sudah selesai
+    // Upload (ulang) bukti pembayaran, dipakai reservasi online yang buktinya masih kosong atau baru saja ditolak admin.
+    public function uploadBukti(Request $request, Reservation $reservasi)
+    {
+        if ($reservasi->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        if ($reservasi->payment_method !== 'online') {
+            abort(403);
+        }
+
+        $request->validate([
+            'payment_proof' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
+
+        if ($reservasi->payment_proof) {
+            Storage::disk('public')->delete($reservasi->payment_proof);
+        }
+
+        $reservasi->update([
+            'payment_proof' => $request->file('payment_proof')->store('payment_proofs', 'public'),
+            'payment_status' => 'waiting_verification',
+        ]);
+
+        return redirect()->route('reservasi.show', $reservasi->id)
+            ->with('success', 'Bukti pembayaran berhasil diunggah, menunggu verifikasi admin.');
+    }
+
+    // Simpan rating & review untuk reservasi yang sudah selesai.
     public function rate(Request $request, Reservation $reservasi)
     {
         if ($reservasi->user_id !== Auth::id()) {

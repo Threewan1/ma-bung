@@ -10,16 +10,14 @@ use Illuminate\Support\Facades\Hash;
 class BarberSeeder extends Seeder
 {
     /**
-     * Seed 3 akun barber awal beserta data barber-nya. Password default
-     * sama untuk ketiganya ("barber123") - sebaiknya diganti oleh
-     * masing-masing barber setelah login pertama kali.
+     * Seed 3 akun barber awal, password default sama ("barber123") untuk ketiganya.
      */
     public function run(): void
     {
         $barbers = [
-            ['nama' => 'Iron', 'email' => 'iron@mabungbarbershop.com'],
-            ['nama' => 'Rival', 'email' => 'rival@mabungbarbershop.com'],
-            ['nama' => 'Amos', 'email' => 'amos@mabungbarbershop.com'],
+            ['nama' => 'Iron', 'email' => 'iron@mabungbarbershop.com', 'foto' => 'barbers/iron.jpeg'],
+            ['nama' => 'Rival', 'email' => 'rival@mabungbarbershop.com', 'foto' => 'barbers/rival.jpeg'],
+            ['nama' => 'Amos', 'email' => 'amos@mabungbarbershop.com', 'foto' => 'barbers/amos.jpeg'],
         ];
 
         foreach ($barbers as $data) {
@@ -37,6 +35,7 @@ class BarberSeeder extends Seeder
                 ['user_id' => $user->id],
                 [
                     'nama' => $data['nama'],
+                    'foto' => $data['foto'],
                     'status_aktif' => true,
                 ]
             );

@@ -1,8 +1,8 @@
 <x-app-layout>
-    <div class="d-flex align-items-center justify-content-center" style="padding-top: 1rem; padding-bottom: 2.5rem;">
-        <div class="bg-panel p-4 p-md-5 rounded-3 shadow w-100" style="max-width: 32rem;">
-            <h2 class="fs-3 fw-bold text-gold mb-4">
-                <i class="fas fa-calendar-check"></i> Buat Reservasi
+    <div class="d-flex align-items-center justify-content-center" style="padding-top: 0.5rem; padding-bottom: 1rem;">
+        <div class="w-100 card-glass reservasi-form-card rounded-4 px-3 py-3" style="max-width: 400px;">
+            <h2 class="fs-4 fw-bold text-gold mb-3">
+                Buat Reservasi
             </h2>
 
             {{-- Pesan Error --}}
@@ -17,13 +17,14 @@
             @endif
 
             <!-- enctype diperlukan agar form bisa mengirim file/gambar -->
-            <form method="POST" action="/reservasi" enctype="multipart/form-data">
+            <!-- data-disable-on-submit: cegah double-submit, lihat script di bawah -->
+            <form method="POST" action="/reservasi" enctype="multipart/form-data" data-disable-on-submit>
                 @csrf
 
                 {{-- Pilih Layanan --}}
-                <div class="mb-3">
+                <div class="mb-2">
                     <label class="form-label">Pilih Layanan</label>
-                    <select name="service_id" class="form-select">
+                    <select name="service_id" class="form-select form-select-sm">
                         <option value="">-- Pilih Layanan --</option>
                         @foreach($services as $service)
                             <option value="{{ $service->id }}" {{ old('service_id', request('service_id')) == $service->id ? 'selected' : '' }}>
@@ -34,26 +35,22 @@
                 </div>
 
                 {{-- Pilih Tanggal --}}
-                <div class="mb-3">
+                <div class="mb-2">
                     <label class="form-label">Pilih Tanggal</label>
-                    <input type="date" name="tanggal" id="tanggal" min="{{ date('Y-m-d') }}" class="form-control" value="{{ old('tanggal') }}">
+                    <input type="date" name="tanggal" id="tanggal" min="{{ date('Y-m-d') }}" class="form-control form-control-sm" value="{{ old('tanggal') }}">
                 </div>
 
-                {{-- Pilih Jam - diisi dinamis lewat AJAX setelah tanggal
-                     dipilih, supaya jam yang semua barber-nya sudah
-                     terisi langsung tampil disabled. --}}
-                <div class="mb-3">
+                {{-- Diisi dinamis lewat AJAX setelah tanggal dipilih. --}}
+                <div class="mb-2">
                     <label class="form-label">Pilih Jam</label>
-                    <select name="jam" id="jam" class="form-select" disabled>
+                    <select name="jam" id="jam" class="form-select form-select-sm" disabled>
                         <option value="">-- Pilih tanggal terlebih dahulu --</option>
                     </select>
                     <small class="text-body-secondary">Jam yang semua barber-nya sudah terisi tidak bisa dipilih.</small>
                 </div>
 
-                {{-- Pilih Barber - dimuat via AJAX setelah tanggal DAN
-                     jam dipilih, barber yang sudah ada reservasi lain
-                     di jam yang sama tampil disabled "Sedang Bertugas". --}}
-                <div class="mb-3">
+                {{-- Dimuat via AJAX setelah tanggal & jam dipilih. --}}
+                <div class="mb-2">
                     <label class="form-label">Pilih Barber</label>
                     <div class="row g-2" id="barber-list">
                         <div class="col-12">
@@ -64,22 +61,20 @@
                 </div>
 
                 {{-- Catatan --}}
-                <div class="mb-4">
+                <div class="mb-3">
                     <label class="form-label">Catatan (opsional)</label>
-                    <textarea name="catatan" rows="3" class="form-control" placeholder="Contoh: ingin potongan pendek..."></textarea>
+                    <textarea name="catatan" rows="2" class="form-control form-control-sm" placeholder="Contoh: ingin potongan pendek..."></textarea>
                 </div>
 
-                {{-- ==========================================================
-                    METODE PEMBAYARAN
-                    ========================================================== --}}
-                <div class="mb-4">
+                {{-- METODE PEMBAYARAN --}}
+                <div class="mb-3">
 
                     <label class="form-label fw-semibold">
                         Metode Pembayaran
                     </label>
 
-                    <!-- ================= COD ================= -->
-                    <div class="form-check mb-2">
+                    <!-- COD -->
+                    <div class="form-check mb-1">
 
                         <input
                             type="radio"
@@ -92,7 +87,7 @@
                         <label class="form-check-label" for="cod">
 
                             <p class="fw-semibold mb-0">
-                                💵 Bayar di Tempat (COD)
+                                Bayar di Tempat (COD)
                             </p>
 
                             <small class="text-body-secondary">
@@ -103,7 +98,7 @@
 
                     </div>
 
-                    <!-- ================= ONLINE ================= -->
+                    <!-- ONLINE -->
                     <div class="form-check">
 
                         <input
@@ -116,11 +111,11 @@
                         <label class="form-check-label" for="online">
 
                             <p class="fw-semibold mb-0">
-                                🌐 Pembayaran Online
+                                Pembayaran Online
                             </p>
 
                             <small class="text-body-secondary">
-                                QRIS, Transfer Bank, DANA, GoPay, ShopeePay.
+                                QRIS, Transfer Bank.
                             </small>
 
                         </label>
@@ -129,11 +124,7 @@
 
                 </div>
 
-                <!-- ==========================================================
-                PEMBAYARAN ONLINE
-                Bagian ini hanya muncul jika user memilih
-                "Pembayaran Online"
-            =========================================================== -->
+                <!-- PEMBAYARAN ONLINE, bagian ini hanya muncul jika user memilih "Pembayaran Online". -->
             <div id="online-payment-section" class="d-none">
 
                 <!-- Judul -->
@@ -141,13 +132,10 @@
                     Pilih Metode Pembayaran Online
                 </label>
 
-                {{-- Grid 2 kolom di HP, 3 kolom di layar >=768px (bukan
-                     ditumpuk 1 per baris) - card dibuat ringkas (padding
-                     kecil, ikon diperkecil, tanpa teks deskripsi) supaya
-                     section ini tidak memanjangkan halaman. --}}
-                <div class="row g-2 mb-3">
+                {{-- Grid 2 kolom di HP, 3 kolom di layar >=768px, card dibuat ringkas biar section ini tidak memanjangkan halaman. --}}
+                <div class="row g-2 mb-2">
 
-                    <!-- ================= QRIS ================= -->
+                    <!-- QRIS -->
                     <div class="col-6 col-md-4">
                         <label class="payment-channel-card bg-surface" for="channel-qris">
                             <input
@@ -156,74 +144,27 @@
                                 id="channel-qris"
                                 value="qris"
                                 class="form-check-input flex-shrink-0">
-                            <span class="payment-channel-icon">📱</span>
                             <span class="payment-channel-name">QRIS</span>
                         </label>
                     </div>
 
-                    <!-- ================= Transfer Bank ================= -->
+                    <!-- Transfer Bank (BRI) -->
                     <div class="col-6 col-md-4">
-                        <label class="payment-channel-card bg-surface" for="channel-bca">
+                        <label class="payment-channel-card bg-surface" for="channel-bri">
                             <input
                                 type="radio"
                                 name="payment_channel"
-                                id="channel-bca"
-                                value="bca"
+                                id="channel-bri"
+                                value="bri"
                                 class="form-check-input flex-shrink-0">
-                            <span class="payment-channel-icon">🏦</span>
                             <span class="payment-channel-name">Transfer Bank</span>
-                        </label>
-                    </div>
-
-                    <!-- ================= DANA ================= -->
-                    <div class="col-6 col-md-4">
-                        <label class="payment-channel-card bg-surface" for="channel-dana">
-                            <input
-                                type="radio"
-                                name="payment_channel"
-                                id="channel-dana"
-                                value="dana"
-                                class="form-check-input flex-shrink-0">
-                            <span class="payment-channel-icon">💙</span>
-                            <span class="payment-channel-name">DANA</span>
-                        </label>
-                    </div>
-
-                    <!-- ================= GoPay ================= -->
-                    <div class="col-6 col-md-4">
-                        <label class="payment-channel-card bg-surface" for="channel-gopay">
-                            <input
-                                type="radio"
-                                name="payment_channel"
-                                id="channel-gopay"
-                                value="gopay"
-                                class="form-check-input flex-shrink-0">
-                            <span class="payment-channel-icon">🟢</span>
-                            <span class="payment-channel-name">GoPay</span>
-                        </label>
-                    </div>
-
-                    <!-- ================= ShopeePay ================= -->
-                    <div class="col-6 col-md-4">
-                        <label class="payment-channel-card bg-surface" for="channel-shopeepay">
-                            <input
-                                type="radio"
-                                name="payment_channel"
-                                id="channel-shopeepay"
-                                value="shopeepay"
-                                class="form-check-input flex-shrink-0">
-                            <span class="payment-channel-icon">🛍</span>
-                            <span class="payment-channel-name">ShopeePay</span>
                         </label>
                     </div>
 
                 </div>
 
-                <!-- ==========================================================
-                    Informasi pembayaran
-                    Nanti akan berubah sesuai metode yang dipilih
-                ========================================================== -->
-                <div id="payment-information" class="bg-surface rounded-3 p-4 mb-3">
+                <!-- Informasi pembayaran, akan berubah sesuai metode yang dipilih. -->
+                <div id="payment-information" class="bg-surface rounded-3 p-3 mb-2">
 
                     <p class="text-body-secondary mb-0">
 
@@ -233,9 +174,7 @@
 
                 </div>
 
-                <!-- ==========================================================
-                    Upload Bukti Pembayaran
-                ========================================================== -->
+                <!-- Upload Bukti Pembayaran -->
                 <div>
 
                     <label class="form-label">
@@ -249,7 +188,7 @@
                         name="payment_proof"
                         id="payment_proof"
                         accept=".jpg,.jpeg,.png"
-                        class="form-control">
+                        class="form-control form-control-sm">
 
                     <small class="text-body-secondary">
 
@@ -261,11 +200,11 @@
 
             </div>
                 {{-- Tombol Submit --}}
-                <button type="submit" class="btn btn-primary w-100 py-2 mt-4 fs-5">
+                <button type="submit" class="btn btn-primary w-100 py-2 mt-3 fs-5">
                     <i class="fas fa-check"></i> Buat Reservasi
                 </button>
 
-                <a href="{{ route('dashboard') }}" class="d-block text-center text-body-secondary mt-3">
+                <a href="{{ route('dashboard') }}" class="d-block text-center text-body-secondary mt-2">
                     Kembali ke Dashboard
                 </a>
             </form>
@@ -273,19 +212,10 @@
     </div>
 
 <script>
-// =======================================================
-// Dibungkus IIFE (function-scope sendiri) supaya aman
-// dijalankan berkali-kali - halaman ini bisa dimuat ulang
-// via navigasi AJAX (lihat layouts/navigation.blade.php),
-// dan tanpa IIFE, deklarasi const/let di sini akan bentrok
-// ("already been declared") kalau script-nya disisipkan
-// lebih dari sekali ke dalam dokumen yang sama.
-// =======================================================
+// Dibungkus IIFE biar aman di-reload lewat navigasi AJAX - tanpa ini, const/let bisa bentrok "already declared".
 (function () {
 
-// =======================================================
-// Ketersediaan jam (AJAX) - diisi ulang tiap kali tanggal berubah
-// =======================================================
+// Ketersediaan jam (AJAX), diisi ulang tiap kali tanggal berubah.
 const tanggalInput = document.getElementById('tanggal');
 const jamSelect = document.getElementById('jam');
 const jamTersediaUrl = '{{ route('reservasi.jam-tersedia') }}';
@@ -323,7 +253,10 @@ function muatJamTersedia(tanggal) {
                 const option = document.createElement('option');
                 option.value = slot.jam;
 
-                if (slot.penuh) {
+                if (slot.sudah_lewat) {
+                    option.textContent = slot.jam + ' - Sudah lewat';
+                    option.disabled = true;
+                } else if (slot.penuh) {
                     option.textContent = slot.jam + ' - Penuh';
                     option.disabled = true;
                 } else {
@@ -333,10 +266,7 @@ function muatJamTersedia(tanggal) {
                 jamSelect.appendChild(option);
             });
 
-            // Kembalikan pilihan jam sebelumnya kalau form baru saja
-            // dikirim ulang karena validasi gagal (mis. jam ternyata
-            // sudah penuh), supaya pelanggan lihat kenapa jam itu
-            // tertolak (opsinya akan tampil "Penuh").
+            // Kembalikan pilihan jam sebelumnya kalau form dikirim ulang gara-gara validasi gagal.
             if (jamTerpilihSebelumnya) {
                 jamSelect.value = jamTerpilihSebelumnya;
             }
@@ -349,10 +279,7 @@ function muatJamTersedia(tanggal) {
         });
 }
 
-// =======================================================
-// Ketersediaan barber (AJAX) - diisi ulang tiap kali tanggal
-// ATAU jam berubah (baru muncul setelah keduanya terisi).
-// =======================================================
+// Ketersediaan barber (AJAX), muncul setelah tanggal & jam terisi.
 const barberListEl = document.getElementById('barber-list');
 const barberTersediaUrl = '{{ route('reservasi.barberTersedia') }}';
 const barberTerpilihSebelumnya = '{{ old('barber_id') }}';
@@ -395,11 +322,14 @@ function muatBarberTersedia(tanggal, jam) {
                 const checked = (barber.tersedia && String(barber.id) === barberTerpilihSebelumnya) ? 'checked' : '';
                 const disabled = barber.tersedia ? '' : 'disabled';
                 const statusLabel = barber.tersedia ? '' : '<span class="barber-choice-status">Sedang Bertugas</span>';
+                const avatar = barber.foto
+                    ? '<img src="' + barber.foto + '" alt="' + barber.nama + '" class="barber-choice-avatar">'
+                    : '<span class="barber-choice-icon"><i class="fas fa-user-tie"></i></span>';
 
                 col.innerHTML =
                     '<label class="' + cardClass + '" for="barber-' + barber.id + '">' +
                         '<input type="radio" name="barber_id" id="barber-' + barber.id + '" value="' + barber.id + '" class="form-check-input" ' + disabled + ' ' + checked + '>' +
-                        '<span class="barber-choice-icon"><i class="fas fa-user-tie"></i></span>' +
+                        avatar +
                         '<span class="barber-choice-name">' + barber.nama + '</span>' +
                         statusLabel +
                     '</label>';
@@ -414,8 +344,7 @@ function muatBarberTersedia(tanggal, jam) {
 
 tanggalInput.addEventListener('change', function () {
     muatJamTersedia(this.value);
-    // Jam ikut berubah/reset saat tanggal ganti, jadi daftar barber
-    // (yang tergantung tanggal+jam) juga direset sampai jam dipilih ulang.
+    // Daftar barber ikut direset karena tergantung tanggal+jam.
     muatBarberTersedia('', '');
 });
 
@@ -423,9 +352,7 @@ jamSelect.addEventListener('change', function () {
     muatBarberTersedia(tanggalInput.value, this.value);
 });
 
-// Muat ulang otomatis kalau tanggal (dan jam) sudah terisi saat halaman
-// dibuka (mis. form dikirim ulang setelah validasi gagal dan
-// old('tanggal')/old('jam') masih ada).
+// Muat ulang otomatis kalau tanggal/jam sudah terisi (form dikirim ulang setelah validasi gagal).
 if (tanggalInput.value) {
     muatJamTersedia(tanggalInput.value);
 
@@ -451,9 +378,7 @@ const paymentInformation = document.getElementById('payment-information');
 const paymentChannels = document.querySelectorAll('input[name="payment_channel"]');
 
 
-// =======================================================
-// Menampilkan / menyembunyikan pembayaran online
-// =======================================================
+// Menampilkan / menyembunyikan pembayaran online.
 function togglePaymentSection() {
 
     if (onlineRadio.checked) {
@@ -471,9 +396,7 @@ function togglePaymentSection() {
 }
 
 
-// =======================================================
-// Mengubah informasi sesuai metode pembayaran
-// =======================================================
+// Mengubah informasi sesuai metode pembayaran.
 function updatePaymentInformation(channel) {
 
     switch(channel){
@@ -481,17 +404,17 @@ function updatePaymentInformation(channel) {
         case 'qris':
 
             paymentInformation.innerHTML = `
-                <h3 class="fs-5 fw-bold text-gold mb-3">
+                <h3 class="fs-6 fw-bold text-gold mb-2">
                     Pembayaran QRIS
                 </h3>
 
                 <img
-                    src="{{ asset('images/qris.jpg') }}"
-                    class="mx-auto d-block rounded-3 mb-3"
-                    style="width: 14rem; max-width: 100%;"
+                    src="{{ asset('images/Qris.jpeg') }}"
+                    class="mx-auto d-block rounded-3 mb-2"
+                    style="width: 9rem; max-width: 100%;"
                     alt="QRIS">
 
-                <p class="text-center text-body-secondary mb-0">
+                <p class="text-center text-body-secondary small mb-0">
                     Scan QRIS menggunakan aplikasi pembayaran apa saja.
                 </p>
             `;
@@ -499,68 +422,23 @@ function updatePaymentInformation(channel) {
         break;
 
 
-        case 'bca':
+        case 'bri':
 
             paymentInformation.innerHTML = `
-                <h3 class="fs-5 fw-bold text-gold mb-3">
-                    Transfer Bank BCA
+                <h3 class="fs-6 fw-bold text-gold mb-2">
+                    Transfer Bank BRI
                 </h3>
 
-                <p class="mb-0"><strong>No Rekening</strong></p>
+                <p class="mb-0 small"><strong>No Rekening</strong></p>
 
-                <p class="fs-4 fw-bold mb-3">
-                    1234567890
+                <p class="fs-5 fw-bold mb-2">
+                    7913 0101 6186 537
                 </p>
 
-                <p class="mb-0"><strong>Atas Nama</strong></p>
+                <p class="mb-0 small"><strong>Atas Nama</strong></p>
 
-                <p class="mb-0">
-                    Ma'Bung Barbershop
-                </p>
-            `;
-
-        break;
-
-
-        case 'dana':
-
-            paymentInformation.innerHTML = `
-                <h3 class="fs-5 fw-bold text-gold mb-3">
-                    DANA
-                </h3>
-
-                <p class="fs-4 fw-bold mb-0">
-                    081234567890
-                </p>
-            `;
-
-        break;
-
-
-        case 'gopay':
-
-            paymentInformation.innerHTML = `
-                <h3 class="fs-5 fw-bold text-gold mb-3">
-                    GoPay
-                </h3>
-
-                <p class="fs-4 fw-bold mb-0">
-                    081234567890
-                </p>
-            `;
-
-        break;
-
-
-        case 'shopeepay':
-
-            paymentInformation.innerHTML = `
-                <h3 class="fs-5 fw-bold text-gold mb-3">
-                    ShopeePay
-                </h3>
-
-                <p class="fs-4 fw-bold mb-0">
-                    081234567890
+                <p class="mb-0 small">
+                    Muh Rival Hidayat
                 </p>
             `;
 
@@ -571,16 +449,12 @@ function updatePaymentInformation(channel) {
 }
 
 
-// =======================================================
-// Event metode pembayaran utama
-// =======================================================
+// Event metode pembayaran utama.
 onlineRadio.addEventListener('change', togglePaymentSection);
 codRadio.addEventListener('change', togglePaymentSection);
 
 
-// =======================================================
-// Event pilihan metode online
-// =======================================================
+// Event pilihan metode online.
 paymentChannels.forEach(channel => {
 
     channel.addEventListener('change', function(){
@@ -592,10 +466,24 @@ paymentChannels.forEach(channel => {
 });
 
 
-// =======================================================
-// Jalankan saat halaman dibuka
-// =======================================================
+// Jalankan saat halaman dibuka.
 togglePaymentSection();
+
+// Cegah double-submit: nonaktifkan tombol submit dan ganti teksnya jadi "Memproses...", supaya pelanggan tidak klik dua kali selagi email ReservationCreated dikirim (QUEUE_CONNECTION masih "sync" jadi butuh beberapa detik).
+function nonaktifkanTombolSubmit(form, teks) {
+    var btn = form.querySelector('button[type="submit"]');
+    if (!btn || btn.disabled) {
+        return;
+    }
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> ' + (teks || 'Memproses...');
+}
+
+document.addEventListener('submit', function (e) {
+    if (e.target.matches('[data-disable-on-submit]')) {
+        nonaktifkanTombolSubmit(e.target);
+    }
+});
 
 })();
 </script>

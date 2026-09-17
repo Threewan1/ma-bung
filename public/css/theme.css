@@ -1,27 +1,32 @@
 /*
- * Ma'Bung Barbershop - Bootstrap 5 dark/gold theme overrides.
- * Loaded after bootstrap.min.css. Body uses <html data-bs-theme="dark">
- * so native Bootstrap components (card, table, navbar, dropdown, modal,
- * form-control) pick up dark colors automatically; here we retint the
- * "primary" role to gold and match the app's original gray-900/800/700
- * background scale.
- *
- * Gold scale used throughout: #facc15 (base/resting - bright), #fde047
- * (hover/lighten), #eab308 (active/pressed - darken).
+ * Ma'Bung Barbershop - Bootstrap 5 dark/gold theme overrides, loaded setelah bootstrap.min.css.
+ * Warna gold cuma didefinisikan sekali lewat 3 custom property di :root di bawah, dipakai lewat var(...) di seluruh file.
  */
 
 :root {
     /* Font global website: Times New Roman di semua halaman */
     --bs-font-sans-serif: 'Times New Roman', Times, serif;
+
+    /* Diredupkan dari kuning neon semula, biar terasa lebih soft/premium di atas tema dark. */
+    --color-gold: #d4af37;
+    --color-gold-rgb: 212, 175, 55;
+    --color-gold-hover: #d8bd64;
+    --color-gold-hover-rgb: 216, 189, 100;
+    --color-gold-active: #a88924;
 }
 
 body {
     font-family: var(--bs-font-sans-serif);
 }
 
-/* Times New Roman goresannya lebih tipis dari font UI sans-serif biasa,
-   jadi teks sekunder/kecil di atas background gelap perlu sedikit
-   ditebalkan supaya kontras & keterbacaannya tetap terjaga. */
+/* Guard anti-scroll-horizontal, cuma di <html> (bukan <body> juga) biar position:sticky tidak salah hitung titik nempelnya. */
+html {
+    overflow-x: hidden;
+    max-width: 100%;
+    background-color: transparent;
+}
+
+/* Times New Roman lebih tipis dari font UI biasa, jadi teks kecil ditebalkan biar tetap kontras. */
 .text-body-secondary,
 small,
 .small {
@@ -37,12 +42,12 @@ small,
     --bs-border-color-translucent: #374151;
     --bs-emphasis-color: #ffffff;
     --bs-secondary-color: #9ca3af;
-    --bs-link-color: #facc15;
-    --bs-link-color-rgb: 250, 204, 21;
-    --bs-link-hover-color: #fde047;
-    --bs-link-hover-color-rgb: 253, 224, 71;
-    --bs-primary: #facc15;
-    --bs-primary-rgb: 250, 204, 21;
+    --bs-link-color: var(--color-gold);
+    --bs-link-color-rgb: var(--color-gold-rgb);
+    --bs-link-hover-color: var(--color-gold-hover);
+    --bs-link-hover-color-rgb: var(--color-gold-hover-rgb);
+    --bs-primary: var(--color-gold);
+    --bs-primary-rgb: var(--color-gold-rgb);
 }
 
 body {
@@ -54,12 +59,10 @@ body {
     background: rgba(31, 41, 55, 0.55) !important;
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
-    border: 1px solid rgba(250, 204, 21, 0.15);
+    border: 1px solid rgba(var(--color-gold-rgb), 0.15);
 }
 
-/* Navbar utama - transparan sepenuhnya dan mengambang tetap di atas
-   (fixed), supaya foto background halaman langsung terlihat di
-   belakangnya tanpa kotak/balok gelap. */
+/* Navbar utama transparan & fixed, biar foto background langsung terlihat tanpa kotak gelap. */
 .navbar-floating {
     position: fixed;
     top: 0;
@@ -71,33 +74,23 @@ body {
     box-shadow: none;
 }
 
-/* Spacer pengganti tinggi navbar (yang sekarang lepas dari alur
-   dokumen karena position: fixed), supaya konten halaman di
-   bawahnya tidak ketutupan. */
+/* Pengganti tinggi navbar yang sudah fixed, biar konten di bawahnya tidak ketutupan. */
 .navbar-floating-spacer {
     height: 4rem;
 }
 
-/* Jarak icon hamburger dari tepi kiri viewport - dibuat mepet
-   (~12px), tidak lagi mengikuti padding besar bawaan .container. */
+/* Icon hamburger dibuat mepet ke tepi kiri (~12px), tidak ikut padding besar bawaan .container. */
 .navbar-floating-inner {
     padding-left: 12px;
     padding-right: 12px;
 }
 
-/* Drop-shadow tipis khusus pada icon hamburger supaya tetap kontras
-   terlihat di atas foto background apa pun (terang maupun gelap). */
+/* Drop-shadow tipis biar icon hamburger tetap kontras di atas foto background apa pun. */
 .navbar-floating-icon {
     filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.9));
 }
 
-/* ===================================================== */
-/* Judul halaman mengambang di pojok kanan atas - transparan */
-/* (menyatu dengan foto background), fixed di viewport jadi  */
-/* tetap diam di tempat saat halaman di-scroll (bukan sticky, */
-/* jadi tidak ikut alur dokumen). Teks diberi text-shadow      */
-/* supaya tetap terbaca di atas foto background apa pun.       */
-/* ===================================================== */
+/* Judul halaman mengambang di pojok kanan atas, fixed biar diam saat discroll, text-shadow biar tetap terbaca di atas foto apa pun. */
 .page-title-floating {
     position: fixed;
     top: 0;
@@ -113,6 +106,8 @@ body {
 .page-title-floating h2 {
     white-space: nowrap;
     text-shadow: 0 1px 6px rgba(0, 0, 0, 0.85);
+    /* Diperkecil dari fs-4 bawaan biar konsisten dengan .admin-page-title. */
+    font-size: 1.15rem;
 }
 
 @media (max-width: 575.98px) {
@@ -121,14 +116,58 @@ body {
     }
 
     .page-title-floating h2 {
-        font-size: 1.05rem;
+        font-size: 0.95rem;
     }
 }
 
 @media (max-width: 400px) {
     .page-title-floating h2 {
-        font-size: 0.85rem;
+        font-size: 0.8rem;
     }
+}
+
+/* Teks brand dipisah dari .navbar-brand (yang white-space:nowrap bawaan Bootstrap) biar bisa wrap & mengecil sendiri. */
+.navbar-brand-text {
+    white-space: normal;
+}
+
+@media (max-width: 575.98px) {
+    .navbar-brand-text {
+        font-size: 1.15rem;
+    }
+}
+
+@media (max-width: 400px) {
+    .navbar-brand-text {
+        font-size: 0.95rem;
+    }
+}
+
+/* display-4 bawaan (~3.5rem) terlalu besar di layar sempit, berisiko wrap 3+ baris. */
+@media (max-width: 575.98px) {
+    .hero-title {
+        font-size: 2.25rem;
+    }
+}
+
+@media (max-width: 400px) {
+    .hero-title {
+        font-size: 1.85rem;
+    }
+}
+
+/* btn-sm bawaan cuma ~36-38px, di bawah touch-target nyaman (44px) - class terpisah biar tidak scope creep ke .btn-sm lain. */
+.btn-auth-submit {
+    min-height: 44px;
+}
+
+/* Area klik totalnya cuma ~36px, diperlebar ke 44px tanpa mengubah ukuran visual ikon. */
+.btn-hamburger-touch {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
 }
 
 .bg-surface {
@@ -136,52 +175,98 @@ body {
 }
 
 .text-gold {
-    color: #facc15 !important;
+    color: var(--color-gold) !important;
+}
+
+/* Logo dibungkus lingkaran putih biar tetap jelas di atas navbar dark mode, ukurannya diatur lewat 3 modifier sm/md/lg. */
+.brand-logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: #ffffff;
+    border-radius: 50%;
+    padding: 2px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
+.brand-logo img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.brand-logo-sm {
+    width: 28px;
+    height: 28px;
+}
+
+.brand-logo-md {
+    width: 36px;
+    height: 36px;
+}
+
+.brand-logo-lg {
+    width: 46px;
+    height: 46px;
+}
+
+/* Judul halaman admin di pojok kanan atas, satu class dipakai di semua halaman admin supaya ukurannya konsisten, bukan lewat utility class fs-2/fw-bold yang diulang-ulang. */
+.admin-page-title {
+    display: inline-block;
+    margin-bottom: 0;
+    padding: 0.4rem 0.85rem;
+    border-radius: 0.6rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--color-gold);
 }
 
 .border-gold {
-    border-color: #facc15 !important;
+    border-color: var(--color-gold) !important;
 }
 
 /* Retint Bootstrap's "primary" role to gold everywhere */
 .btn-primary {
     --bs-btn-color: #111827;
-    --bs-btn-bg: #facc15;
-    --bs-btn-border-color: #facc15;
+    --bs-btn-bg: var(--color-gold);
+    --bs-btn-border-color: var(--color-gold);
     --bs-btn-hover-color: #111827;
-    --bs-btn-hover-bg: #fde047;
-    --bs-btn-hover-border-color: #fde047;
+    --bs-btn-hover-bg: var(--color-gold-hover);
+    --bs-btn-hover-border-color: var(--color-gold-hover);
     --bs-btn-active-color: #111827;
-    --bs-btn-active-bg: #eab308;
-    --bs-btn-active-border-color: #eab308;
+    --bs-btn-active-bg: var(--color-gold-active);
+    --bs-btn-active-border-color: var(--color-gold-active);
     --bs-btn-disabled-color: #111827;
-    --bs-btn-disabled-bg: #facc15;
-    --bs-btn-disabled-border-color: #facc15;
+    --bs-btn-disabled-bg: var(--color-gold);
+    --bs-btn-disabled-border-color: var(--color-gold);
     font-weight: 700;
 }
 
 .btn-outline-primary {
-    --bs-btn-color: #facc15;
-    --bs-btn-border-color: #facc15;
+    --bs-btn-color: var(--color-gold);
+    --bs-btn-border-color: var(--color-gold);
     --bs-btn-hover-color: #111827;
-    --bs-btn-hover-bg: #facc15;
-    --bs-btn-hover-border-color: #facc15;
+    --bs-btn-hover-bg: var(--color-gold);
+    --bs-btn-hover-border-color: var(--color-gold);
     --bs-btn-active-color: #111827;
-    --bs-btn-active-bg: #eab308;
-    --bs-btn-active-border-color: #eab308;
+    --bs-btn-active-bg: var(--color-gold-active);
+    --bs-btn-active-border-color: var(--color-gold-active);
 }
 
 .text-primary {
-    color: #facc15 !important;
+    color: var(--color-gold) !important;
 }
 
 .bg-primary {
-    background-color: #facc15 !important;
+    background-color: var(--color-gold) !important;
     color: #111827 !important;
 }
 
 .border-primary {
-    border-color: #facc15 !important;
+    border-color: var(--color-gold) !important;
 }
 
 .badge.bg-primary {
@@ -190,28 +275,28 @@ body {
 
 .form-control:focus,
 .form-select:focus {
-    border-color: #facc15;
-    box-shadow: 0 0 0 0.25rem rgba(250, 204, 21, 0.25);
+    border-color: var(--color-gold);
+    box-shadow: 0 0 0 0.25rem rgba(var(--color-gold-rgb), 0.25);
 }
 
 .form-check-input:checked {
-    background-color: #facc15;
-    border-color: #facc15;
+    background-color: var(--color-gold);
+    border-color: var(--color-gold);
 }
 
 .form-check-input:focus {
-    border-color: #facc15;
-    box-shadow: 0 0 0 0.25rem rgba(250, 204, 21, 0.25);
+    border-color: var(--color-gold);
+    box-shadow: 0 0 0 0.25rem rgba(var(--color-gold-rgb), 0.25);
 }
 
 .navbar-brand,
 .nav-link.active {
-    color: #facc15 !important;
+    color: var(--color-gold) !important;
 }
 
-/* File input "browse" button, used on payment-proof uploads */
+/* Tombol "browse" pada file input, dipakai di upload bukti pembayaran */
 .form-control::file-selector-button {
-    background-color: #facc15;
+    background-color: var(--color-gold);
     color: #111827;
     font-weight: 700;
     border: 0;
@@ -220,16 +305,14 @@ body {
 }
 
 .form-control:hover::file-selector-button {
-    background-color: #fde047;
+    background-color: var(--color-gold-hover);
 }
 
 a {
     text-decoration: none;
 }
 
-/* ===================================================== */
-/* Animasi umum: fade-in + slide-up saat halaman dimuat   */
-/* ===================================================== */
+/* Animasi umum: fade-in + slide-up saat halaman dimuat. */
 
 @keyframes fadeInUp {
     from {
@@ -270,9 +353,7 @@ a {
     }
 }
 
-/* ===================================================== */
-/* Hover global: card & tombol sedikit membesar + glow    */
-/* ===================================================== */
+/* Hover global: card & tombol sedikit membesar + glow. */
 
 .btn {
     transition: transform 0.3s ease, box-shadow 0.3s ease,
@@ -285,14 +366,14 @@ a {
 
 .btn-primary:hover,
 .btn-outline-primary:hover {
-    box-shadow: 0 0 22px rgba(250, 204, 21, 0.5);
+    box-shadow: 0 0 22px rgba(var(--color-gold-rgb), 0.5);
 }
 
 /* Elemen dekoratif blur gold-amber di background section */
 .blob-decor {
     position: absolute;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(250, 204, 21, 0.35) 0%, rgba(250, 204, 21, 0) 70%);
+    background: radial-gradient(circle, rgba(var(--color-gold-rgb), 0.35) 0%, rgba(var(--color-gold-rgb), 0) 70%);
     filter: blur(50px);
     pointer-events: none;
     z-index: 0;
@@ -316,7 +397,7 @@ a {
 }
 
 .badge.text-bg-primary {
-    box-shadow: 0 0 10px rgba(250, 204, 21, 0.5);
+    box-shadow: 0 0 10px rgba(var(--color-gold-rgb), 0.5);
 }
 
 .badge.text-bg-secondary {
@@ -330,11 +411,12 @@ a {
     background: linear-gradient(180deg, #111827 0%, #1b2438 55%, #2b2314 100%);
 }
 
+/* Card layanan (landing page & halaman "Semua Layanan"): foto penuh 1 kartu, judul & harga ditumpuk pakai gradient tipis, bukan panel solid. */
 .card-layanan {
     position: relative;
     z-index: 1;
-    background-color: #1f2937;
-    border: 1px solid rgba(250, 204, 21, 0.25);
+    aspect-ratio: 4 / 5;
+    border: 1px solid rgba(var(--color-gold-rgb), 0.25);
     border-radius: 0.75rem;
     overflow: hidden;
     transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
@@ -342,13 +424,14 @@ a {
 
 .card-layanan:hover {
     transform: translateY(-6px) scale(1.02);
-    box-shadow: 0 1rem 2.5rem rgba(250, 204, 21, 0.3);
-    border-color: rgba(250, 204, 21, 0.7);
+    box-shadow: 0 1rem 2.5rem rgba(var(--color-gold-rgb), 0.3);
+    border-color: rgba(var(--color-gold-rgb), 0.7);
 }
 
+/* Foto mengisi seluruh kartu, tidak cuma bagian atas, biar tidak dipotong blok teks di bawahnya. */
 .card-layanan-img-wrap {
-    aspect-ratio: 16 / 9;
-    overflow: hidden;
+    position: absolute;
+    inset: 0;
 }
 
 .card-layanan-img-wrap img {
@@ -358,10 +441,85 @@ a {
     display: block;
 }
 
-/* Ikon sosial media pada offcanvas menu - ukuran container disamakan
-   persis dan ikon di dalamnya di-center sempurna (horizontal & vertikal)
-   pakai flexbox, supaya Instagram/WhatsApp/Facebook selalu sejajar rapi
-   meski glyph masing-masing ikon punya proporsi berbeda. */
+/* Gradient tipis, bukan blok warna solid, biar foto di belakang teks tetap kelihatan. */
+.card-layanan-body {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 1.5rem;
+    background: linear-gradient(180deg, transparent 0%, rgba(10, 14, 23, 0.85) 75%);
+}
+
+/* Ukuran dasar 1.25rem (dulu fs-5), class fs-5 dilepas dari Blade karena utility fs-* Bootstrap selalu !important dan bikin override di bawah tidak pernah menang. */
+.layanan-section .card-layanan h3,
+.layanan-section .card-layanan p {
+    font-size: 1.25rem;
+}
+
+/* 3 kolom sejajar di mobile (col-4 di Blade) bikin card lebih kecil, jadi gambar/font/padding diperkecil khusus di breakpoint ini saja. */
+@media (max-width: 767.98px) {
+    .layanan-section .card-layanan {
+        aspect-ratio: 1 / 1;
+    }
+
+    .layanan-section .card-layanan-body {
+        padding: 0.5rem 0.4rem;
+    }
+
+    .layanan-section .card-layanan h3 {
+        font-size: 0.68rem;
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+        overflow-wrap: break-word;
+    }
+
+    .layanan-section .card-layanan p {
+        font-size: 0.68rem;
+    }
+}
+
+/* Halaman pelanggan "Semua Layanan & Harga" - ada tombol "Reservasi
+   Sekarang" di dalam body overlay, jadi butuh sedikit ruang ekstra di
+   bawah gradient supaya tombol tidak mepet (berlaku di semua ukuran). */
+.layanan-page-card .card-layanan-body {
+    padding-bottom: 1.25rem;
+}
+
+/* Ukuran dasar 1.25rem/1.5rem (dulu fs-5/fs-4), dilepas dari Blade karena fs-* Bootstrap selalu !important. */
+.layanan-page-card h3 {
+    font-size: 1.25rem;
+}
+
+.layanan-page-card p {
+    font-size: 1.5rem;
+}
+
+/* 2 kolom di HP (col-6) bikin kartu sempit di <576px, jadi padding/font/tombol dipadatkan tapi teks tetap boleh wrap. */
+@media (max-width: 575.98px) {
+    .layanan-page-card .card-layanan-body {
+        padding: 0.65rem 0.5rem 0.85rem;
+    }
+
+    .layanan-page-card h3 {
+        font-size: 0.8rem;
+        line-height: 1.2;
+        margin-bottom: 0.3rem !important;
+        overflow-wrap: break-word;
+    }
+
+    .layanan-page-card p {
+        font-size: 0.85rem;
+        margin-bottom: 0.5rem !important;
+    }
+
+    .layanan-page-card .btn {
+        font-size: 0.68rem;
+        padding: 0.3rem 0.5rem;
+    }
+}
+
+/* Ikon sosial media di-center pakai flexbox biar sejajar rapi meski proporsi glyph beda-beda. */
 .social-link {
     display: flex;
     align-items: center;
@@ -374,15 +532,7 @@ a {
 }
 
 .social-link:hover {
-    color: #facc15;
-}
-
-/* Banner promo di landing page - lihat catatan "KONTEN PLACEHOLDER"
-   di welcome.blade.php untuk cara mengganti/menghapusnya. */
-.promo-banner {
-    background: linear-gradient(90deg, #facc15, #f59e0b);
-    color: #111827;
-    font-size: 0.95rem;
+    color: var(--color-gold);
 }
 
 /* Grid foto section "Galeri Kami" - efek zoom ringan saat di-hover */
@@ -407,7 +557,7 @@ a {
 /* Accordion FAQ - disamakan dengan gaya glassmorphism card lain */
 #faqAccordion .accordion-item {
     background: rgba(31, 41, 55, 0.55);
-    border: 1px solid rgba(250, 204, 21, 0.15);
+    border: 1px solid rgba(var(--color-gold-rgb), 0.15);
 }
 
 #faqAccordion .accordion-button {
@@ -417,14 +567,14 @@ a {
 }
 
 #faqAccordion .accordion-button:not(.collapsed) {
-    background: rgba(250, 204, 21, 0.1);
-    color: #facc15;
+    background: rgba(var(--color-gold-rgb), 0.1);
+    color: var(--color-gold);
     box-shadow: none;
 }
 
 #faqAccordion .accordion-button:focus {
     box-shadow: none;
-    border-color: rgba(250, 204, 21, 0.3);
+    border-color: rgba(var(--color-gold-rgb), 0.3);
 }
 
 #faqAccordion .accordion-body {
@@ -434,21 +584,14 @@ a {
 /* Footer landing page */
 .landing-footer {
     background: rgba(17, 24, 39, 0.6);
-    border-top: 1px solid rgba(250, 204, 21, 0.15);
+    border-top: 1px solid rgba(var(--color-gold-rgb), 0.15);
 }
 
-/* =====================================================
- * Background foto premium untuk SEMUA halaman (site-wide).
- * Foto yang sama dipakai di mana-mana (satu URL = satu file
- * di-cache browser sekali, dipakai ulang di semua halaman)
- * supaya konsisten dan ringan. Gradient overlay gelap
- * dilapis langsung di atas foto lewat background-image
- * berlapis, jadi tidak perlu elemen tambahan.
- * ===================================================== */
+/* Background foto site-wide, satu URL dipakai di semua halaman biar konsisten & di-cache browser sekali. */
 .site-bg {
     background-image:
         linear-gradient(180deg, rgba(10, 14, 23, 0.85) 0%, rgba(17, 24, 39, 0.92) 100%),
-        url('https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?auto=format&fit=crop&w=1600&q=60');
+        url('/images/ruangan.jpeg');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -462,8 +605,8 @@ a {
     background: rgba(15, 23, 42, 0.4);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(250, 204, 21, 0.5);
-    box-shadow: 0 0 45px rgba(250, 204, 21, 0.15), 0 1.5rem 3rem rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(var(--color-gold-rgb), 0.5);
+    box-shadow: 0 0 45px rgba(var(--color-gold-rgb), 0.15), 0 1.5rem 3rem rgba(0, 0, 0, 0.45);
 }
 
 /* Input di dalam kartu glass dibuat lebih solid supaya kontras & jelas sebagai kotak input */
@@ -478,9 +621,21 @@ a {
     background-color: rgba(15, 23, 42, 0.95);
 }
 
-/* ===================================================== */
-/* Admin panel: sidebar layout                            */
-/* ===================================================== */
+/* Form "Buat Reservasi" panjang, jadi label & jarak dirapatkan khusus di card ini (tidak menyentuh .card-glass Login/Register). */
+.reservasi-form-card .form-label {
+    margin-bottom: 0.25rem;
+    font-size: 0.85rem;
+}
+
+.reservasi-form-card small {
+    font-size: 0.72rem;
+}
+
+.reservasi-form-card .form-check-label p {
+    font-size: 0.85rem;
+}
+
+/* Admin panel: sidebar layout. */
 
 .admin-sidebar {
     --bs-offcanvas-width: 240px;
@@ -494,7 +649,7 @@ a {
         left: 0;
         width: 240px;
         height: 100vh;
-        border-right: 1px solid rgba(250, 204, 21, 0.15);
+        border-right: 1px solid rgba(var(--color-gold-rgb), 0.15);
         z-index: 1030;
     }
 
@@ -509,7 +664,7 @@ a {
     min-height: 100vh;
     background-image:
         linear-gradient(135deg, rgba(10, 14, 23, 0.85) 0%, rgba(17, 24, 39, 0.92) 100%),
-        url('https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?auto=format&fit=crop&w=1600&q=60');
+        url('/images/ruangan.jpeg');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -518,24 +673,42 @@ a {
 
 .admin-mobile-topbar {
     background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
-    border-bottom: 1px solid rgba(250, 204, 21, 0.15);
-    height: 3.5rem;
+    border-bottom: 1px solid rgba(var(--color-gold-rgb), 0.15);
+    min-height: 3.5rem;
     position: sticky;
     top: 0;
     z-index: 1020;
 }
 
-/* Top bar halaman kerja barber - sama gaya dengan .admin-mobile-topbar
-   (gradient gelap + border bawah gold), tapi dipakai di semua lebar
-   layar (barber cuma punya 1 halaman, tidak perlu sidebar seperti admin). */
+/* Sama gaya dengan .admin-mobile-topbar, tapi dipakai di semua lebar layar (barber tidak perlu sidebar). */
 .barber-topbar {
-    background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
-    border-bottom: 1px solid rgba(250, 204, 21, 0.15);
+    background: transparent;
+    border: none;
     padding-top: 0.75rem;
     padding-bottom: 0.75rem;
     position: sticky;
     top: 0;
     z-index: 1020;
+}
+
+/* Beda dari .navbar-floating, topbar ini punya teks jadi perlu text-shadow biar tetap terbaca di atas foto. */
+.barber-topbar span {
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.85);
+}
+
+/* Sama seperti .page-title-floating h2 - teks brand+nama barber
+   dikecilkan di layar sempit supaya tidak sesak berdesakan dengan
+   hamburger+logo. */
+@media (max-width: 575.98px) {
+    .barber-topbar span {
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 400px) {
+    .barber-topbar span {
+        font-size: 0.8rem;
+    }
 }
 
 /* Kartu di dalam konten admin tetap glass, plus shadow supaya "naik" dari foto background */
@@ -558,14 +731,14 @@ a {
 }
 
 .admin-nav-link:hover {
-    background-color: rgba(250, 204, 21, 0.08);
+    background-color: rgba(var(--color-gold-rgb), 0.08);
     color: #ffffff;
 }
 
 .admin-nav-link.active {
-    background-color: rgba(250, 204, 21, 0.15);
-    border-left-color: #facc15;
-    color: #facc15;
+    background-color: rgba(var(--color-gold-rgb), 0.15);
+    border-left-color: var(--color-gold);
+    color: var(--color-gold);
     font-weight: 600;
 }
 
@@ -573,20 +746,79 @@ a {
 .admin-stat-card {
     position: relative;
     z-index: 1;
-    border: 1px solid rgba(250, 204, 21, 0.2);
+    border: 1px solid rgba(var(--color-gold-rgb), 0.2);
     transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+/* Class semantik sendiri (bukan fs-5/fs-3/fs-6 Bootstrap lagi), karena fs-* selalu !important dan bikin override di bawah tidak pernah menang - .display-6 dikecualikan karena memang tidak !important. */
+.admin-stat-card-title {
+    font-size: 1.25rem;
+}
+
+.admin-stat-card-value {
+    font-size: 1.75rem;
+}
+
+.admin-stat-card-subvalue {
+    font-size: 1rem;
+}
+
+/* 2 kotak sejajar di HP & tablet, tinggi dipatok seragam & teks dikecilkan secukupnya (boleh wrap) - :not(.admin-stat-card-success) kecualikan "Total Pendapatan" yang full-width. */
+@media (max-width: 575.98px) {
+    .admin-stat-card:not(.admin-stat-card-success) {
+        padding: 0.6rem 0.5rem !important;
+        min-height: 5.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .admin-stat-card:not(.admin-stat-card-success) .admin-stat-card-title {
+        font-size: 0.75rem;
+        line-height: 1.25;
+        margin-bottom: 0.3rem;
+        overflow-wrap: break-word;
+        word-break: break-word;
+    }
+
+    .admin-stat-card:not(.admin-stat-card-success) .display-6,
+    .admin-stat-card:not(.admin-stat-card-success) .admin-stat-card-value {
+        font-size: 1.1rem;
+    }
+
+    .admin-stat-card:not(.admin-stat-card-success) .admin-stat-card-subvalue {
+        font-size: 0.65rem;
+    }
+}
+
+/* 576-991.98px masih 2 kolom tapi jauh lebih lebar, jadi label cuma dikecilkan sedikit untuk jaga-jaga. */
+@media (min-width: 576px) and (max-width: 991.98px) {
+    .admin-stat-card:not(.admin-stat-card-success) .admin-stat-card-title {
+        font-size: 1.05rem;
+        overflow-wrap: break-word;
+        word-break: break-word;
+    }
+}
+
+/* Kosmetik saja (card ini sudah aman di HP), h3/p masih pakai fs-5/fs-2 jadi override-nya wajib !important. */
+@media (max-width: 575.98px) {
+    .admin-stat-card-success h3 {
+        font-size: 1rem !important;
+    }
+
+    .admin-stat-card-success p {
+        font-size: 1.5rem !important;
+    }
 }
 
 .admin-stat-card:hover {
     transform: translateY(-4px) scale(1.02);
-    box-shadow: 0 0.75rem 1.75rem rgba(250, 204, 21, 0.25);
-    border-color: rgba(250, 204, 21, 0.6);
+    box-shadow: 0 0.75rem 1.75rem rgba(var(--color-gold-rgb), 0.25);
+    border-color: rgba(var(--color-gold-rgb), 0.6);
 }
 
-/* Varian aksen warna untuk card statistik yang butuh tindakan (kuning/
-   warning) atau bersifat positif (hijau/success) - dipakai bersama
-   utility Bootstrap .border-warning/.border-success di Blade, di sini
-   cuma menimpa warna glow saat hover supaya tidak ikut gold. */
+/* Varian warning/success cuma menimpa warna glow saat hover, biar tidak ikut gold. */
 .admin-stat-card-warning:hover {
     box-shadow: 0 0.75rem 1.75rem rgba(255, 193, 7, 0.3);
 }
@@ -595,10 +827,7 @@ a {
     box-shadow: 0 0.75rem 1.75rem rgba(25, 135, 84, 0.3);
 }
 
-/* Card statistik yang sekaligus jadi link (mis. "Menunggu Konfirmasi",
-   "Perlu Verifikasi Pembayaran" di dashboard admin) - beri sinyal
-   visual tambahan supaya kelihatan beda dari card statistik biasa yang
-   cuma menampilkan angka (tidak bisa diklik). */
+/* Card statistik yang sekaligus jadi link, beri sinyal visual biar beda dari yang tidak bisa diklik. */
 .admin-stat-card-link {
     cursor: pointer;
 }
@@ -607,44 +836,170 @@ a {
     text-decoration: underline;
 }
 
-/* ===================================================== */
-/* Filter metode pembayaran (COD/Online) di "Kelola          */
-/* Reservasi" admin - murni CSS berdasarkan atribut           */
-/* data-payment-filter yang ditaruh JS di #reservasiStatusTab- */
-/* Content (lihat admin/reservasi/index.blade.php). Baris tabel/ */
-/* card diberi data-row-payment-method, kolom "Bukti Bayar"       */
-/* diberi data-col="bukti-bayar" (lihat _list.blade.php).          */
-/* ===================================================== */
+/* Filter metode pembayaran, murni CSS berdasarkan data-payment-filter yang ditaruh JS. */
 
-/* Filter "COD": sembunyikan baris Online + seluruh kolom Bukti Bayar
-   (tidak relevan sama sekali untuk COD). */
+/* Filter "COD": sembunyikan baris Online. */
 #reservasiStatusTabContent[data-payment-filter="cod"] [data-row-payment-method="online"] {
     display: none;
 }
 
-#reservasiStatusTabContent[data-payment-filter="cod"] [data-col="bukti-bayar"] {
-    display: none;
-}
-
-/* Filter "Online": sembunyikan baris COD, kolom Bukti Bayar tetap
-   tampil seperti biasa. */
+/* Filter "Online": sembunyikan baris COD. */
 #reservasiStatusTabContent[data-payment-filter="online"] [data-row-payment-method="cod"] {
     display: none;
 }
 
+/* Grid card menggantikan tabel HTML di semua lebar layar, dipisah dari .table-card-item biar tidak ikut mengubah halaman lain. */
+/* auto-fill/minmax (bukan repeat(N,1fr) per breakpoint) biar kolom dihitung dari lebar container sungguhan, bukan viewport. */
+.admin-reservasi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 0.85rem;
+}
+
+.admin-reservasi-card {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    background: rgba(31, 41, 55, 0.55);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(var(--color-gold-rgb), 0.25);
+    border-radius: 0.6rem;
+    padding: 0.65rem 0.75rem;
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.35);
+}
+
+.admin-reservasi-card-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1.25;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid rgba(var(--color-gold-rgb), 0.2);
+}
+
+.admin-reservasi-card-cols {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.4rem;
+}
+
+.admin-reservasi-card-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.4rem;
+}
+
+.admin-reservasi-card-label {
+    font-size: 0.65rem;
+    color: var(--bs-secondary-color);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+
+.admin-reservasi-card-value {
+    font-weight: 600;
+    font-size: 0.78rem;
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+
+.admin-reservasi-card-status {
+    margin-bottom: 0.5rem;
+}
+
+.admin-reservasi-card-status .form-select {
+    font-size: 0.75rem;
+    padding-top: 0.3rem;
+    padding-bottom: 0.3rem;
+}
+
+/* margin-top: auto biar footer selalu menempel di dasar card, tombol tetap sejajar meski info di atasnya beda panjang. */
+.admin-reservasi-card-footer {
+    margin-top: auto;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(var(--color-gold-rgb), 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.admin-reservasi-card-footer .btn {
+    font-size: 0.75rem;
+    padding-top: 0.3rem;
+    padding-bottom: 0.3rem;
+}
+
+.admin-reservasi-card-empty {
+    grid-column: 1 / -1;
+    padding: 2rem 1rem;
+}
+
+/* 3 kolom sejajar di HP (dipaksa, bukan auto-fill/minmax seperti
+   biasanya) - card ini padat isinya (judul, banyak baris info,
+   dropdown status, tombol aksi), jadi konten & tombolnya ikut
+   dipadatkan drastis khusus breakpoint ini: font/padding dikecilkan
+   maksimal, 2 baris info yang kurang krusial (No. Antrian, Pembayaran)
+   disembunyikan via d-none d-sm-flex di Blade, dan tombol aksi jadi
+   ikon-saja (teksnya disembunyikan via d-none d-sm-inline di Blade,
+   title="..." dipakai sebagai tooltip native browser). */
+@media (max-width: 575.98px) {
+    .admin-reservasi-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.4rem;
+    }
+
+    .admin-reservasi-card {
+        padding: 0.4rem 0.35rem;
+    }
+
+    .admin-reservasi-card-title {
+        font-size: 0.62rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .admin-reservasi-card-cols,
+    .admin-reservasi-card-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0;
+        margin-bottom: 0.25rem;
+    }
+
+    .admin-reservasi-card-label {
+        font-size: 0.55rem;
+    }
+
+    .admin-reservasi-card-value {
+        font-size: 0.62rem;
+        text-align: left;
+    }
+
+    .admin-reservasi-card-status .form-select {
+        font-size: 0.6rem;
+        padding: 0.2rem 0.3rem;
+    }
+
+    .admin-reservasi-card-footer .btn {
+        font-size: 0.7rem;
+        padding: 0.35rem;
+    }
+}
+
 /* Hover baris tabel bernuansa gold, konsisten dengan tema */
 .table-hover > tbody > tr:hover > * {
-    --bs-table-hover-bg: rgba(250, 204, 21, 0.08);
+    --bs-table-hover-bg: rgba(var(--color-gold-rgb), 0.08);
     --bs-table-hover-color: #ffffff;
 }
 
-/* ===================================================== */
-/* Table-to-card: di layar sempit (<768px), tabel diganti  */
-/* tampilan tumpukan card lewat toggle breakpoint Bootstrap */
-/* (.d-none/.d-md-block pada <table>, .d-block/.d-md-none   */
-/* pada .table-card-list) - bukan JS. Datanya sama persis,  */
-/* cuma markupnya dirender dua kali dari @foreach yang sama. */
-/* ===================================================== */
+/* Table-to-card: di layar sempit tabel diganti tumpukan card lewat toggle breakpoint Bootstrap, bukan JS. */
 .table-card-list {
     display: flex;
     flex-direction: column;
@@ -657,14 +1012,11 @@ a {
     background: rgba(31, 41, 55, 0.55);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
-    border: 1px solid rgba(250, 204, 21, 0.25);
+    border: 1px solid rgba(var(--color-gold-rgb), 0.25);
     border-radius: 0.65rem;
     padding: 0.75rem 0.9rem;
     box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.35);
-    /* Lapisan jarak kedua yang independen dari `gap` pada
-       .table-card-list/.table-card-grid - dijaga di sini langsung pada
-       kartu supaya jarak vertikal antar card tetap ada meskipun ada
-       override lain pada container-nya. */
+    /* Jarak vertikal independen dari `gap` container, biar tetap ada walau ada override lain. */
     margin-bottom: 20px;
 }
 
@@ -674,7 +1026,7 @@ a {
     color: #ffffff;
     margin-bottom: 0.6rem;
     padding-bottom: 0.45rem;
-    border-bottom: 1px solid rgba(250, 204, 21, 0.2);
+    border-bottom: 1px solid rgba(var(--color-gold-rgb), 0.2);
 }
 
 .table-card-item-cols {
@@ -713,15 +1065,13 @@ a {
 .table-card-item-footer {
     margin-top: 0.6rem;
     padding-top: 0.65rem;
-    border-top: 1px solid rgba(250, 204, 21, 0.1);
+    border-top: 1px solid rgba(var(--color-gold-rgb), 0.1);
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.6rem;
 }
 
-/* Tombol aksi di footer card - dipersempit (padding vertikal tidak
-   terlalu tebal) tapi tinggi tetap dijaga minimal 42px supaya masih
-   nyaman disentuh di layar mobile. */
+/* Padding dipersempit tapi tinggi tetap minimal 42px biar nyaman disentuh di mobile. */
 .table-card-item-footer .btn {
     min-height: 42px;
     padding-top: 0.4rem;
@@ -732,15 +1082,11 @@ a {
     justify-content: center;
 }
 
-/* ===================================================== */
-/* Kartu bordered gold - dipakai di dashboard pelanggan   */
-/* dan halaman profil                                     */
-/* ===================================================== */
-
+/* Kartu bordered gold, dipakai di dashboard pelanggan dan halaman profil. */
 .card-bordered-gold {
     position: relative;
     z-index: 1;
-    border: 1px solid rgba(250, 204, 21, 0.25);
+    border: 1px solid rgba(var(--color-gold-rgb), 0.25);
 }
 
 .card-hover-gold {
@@ -749,62 +1095,241 @@ a {
 
 .card-hover-gold:hover {
     transform: translateY(-4px) scale(1.02);
-    box-shadow: 0 0.75rem 1.75rem rgba(250, 204, 21, 0.25);
-    border-color: rgba(250, 204, 21, 0.6);
+    box-shadow: 0 0.75rem 1.75rem rgba(var(--color-gold-rgb), 0.25);
+    border-color: rgba(var(--color-gold-rgb), 0.6);
 }
 
-/* Halaman "Reservasi Saya" (pelanggan) - di layar >=600px (tapi masih
-   <768px, saat tabel desktop belum diaktifkan lewat d-md-block), versi
-   card ditampilkan 2 kolom berdampingan lewat CSS Grid alih-alih 1
-   kolom penuh, dengan card diperkecil lagi khusus mode ini supaya
-   kedua kolom muat berdampingan dengan nyaman. Di bawah 600px tetap
-   1 kolom (mewarisi flex-column dari .table-card-list). */
-@media (min-width: 600px) {
+/* Grid card jadwal, pola breakpoint sama dengan .admin-reservasi-grid biar konsisten antar halaman. */
+/* auto-fill/minmax biar kolom dihitung dari lebar container sungguhan, tidak overflow saat push-effect #barberOffcanvas menyempitkan #main-content. */
+.barber-jadwal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1rem;
+}
+
+/* Varian barber/riwayat.blade.php, minmax dilebarkan biar thumbnail before/after dapat ruang lebih lega. */
+.barber-jadwal-grid-wide {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+.barber-jadwal-card {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 0.85rem 1rem;
+    border-radius: 0.75rem;
+    background: linear-gradient(160deg, rgba(38, 48, 66, 0.65) 0%, rgba(17, 24, 39, 0.6) 100%);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(var(--color-gold-rgb), 0.35);
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.35);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.barber-jadwal-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(var(--color-gold-rgb), 0.65);
+    box-shadow: 0 0.6rem 1.4rem rgba(var(--color-gold-rgb), 0.2), 0 0.25rem 0.75rem rgba(0, 0, 0, 0.35);
+}
+
+.barber-jadwal-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.6rem;
+    padding-bottom: 0.55rem;
+    border-bottom: 1px solid rgba(var(--color-gold-rgb), 0.15);
+}
+
+.barber-jadwal-card-tanggal {
+    font-size: 0.68rem;
+    color: var(--bs-secondary-color);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    margin-bottom: 0.1rem;
+}
+
+.barber-jadwal-card-jam {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--color-gold);
+}
+
+.barber-jadwal-card-top .badge {
+    font-size: 0.68rem;
+    padding: 0.32em 0.55em;
+}
+
+.barber-jadwal-card-field {
+    margin-bottom: 0.55rem;
+}
+
+.barber-jadwal-card-label {
+    display: block;
+    font-size: 0.65rem;
+    color: var(--bs-secondary-color);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    margin-bottom: 0.1rem;
+}
+
+.barber-jadwal-card-value {
+    font-size: 0.82rem;
+    font-weight: 700;
+    margin-bottom: 0;
+}
+
+.barber-jadwal-card-value .badge {
+    font-size: 0.66rem;
+    padding: 0.32em 0.5em;
+}
+
+.barber-jadwal-card-wa {
+    display: inline-block;
+    font-size: 0.72rem;
+    margin-top: 0.1rem;
+}
+
+.barber-jadwal-card-note {
+    font-size: 0.78rem;
+}
+
+.barber-jadwal-card-footer {
+    margin-top: auto;
+    padding-top: 0.4rem;
+}
+
+.barber-jadwal-card-footer .btn {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.6rem;
+}
+
+/* Gaya glass sama dengan .bg-panel, dipisah sendiri biar bisa dikecilkan tanpa memengaruhi .bg-panel di tempat lain. */
+.barber-ringkasan-card {
+    position: relative;
+    z-index: 1;
+    background: rgba(31, 41, 55, 0.55);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(var(--color-gold-rgb), 0.2);
+    border-radius: 0.6rem;
+    padding: 0.55rem 0.75rem;
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.3);
+}
+
+.barber-ringkasan-label {
+    font-size: 0.68rem;
+    color: var(--bs-secondary-color);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    margin-bottom: 0.25rem;
+}
+
+.barber-ringkasan-value {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--color-gold);
+    line-height: 1.2;
+}
+
+.barber-ringkasan-value-suffix {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+    text-transform: none;
+    letter-spacing: normal;
+}
+
+.barber-ringkasan-progress {
+    height: 0.4rem;
+    margin-top: 0.5rem;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Card "Pelanggan Berikutnya" dibuat lebih menonjol lewat warna latar, nama pelanggan putih biar tidak bersaing dengan angka gold card sebelah. */
+.barber-ringkasan-card-highlight {
+    background: linear-gradient(160deg, rgba(var(--color-gold-rgb), 0.22) 0%, rgba(31, 41, 55, 0.6) 100%);
+    border: 1px solid rgba(var(--color-gold-rgb), 0.55);
+}
+
+.barber-ringkasan-card-highlight .barber-ringkasan-value {
+    font-size: 1.15rem;
+    color: #ffffff;
+}
+
+.barber-ringkasan-highlight-detail {
+    font-size: 0.8rem;
+    color: var(--bs-secondary-color);
+    margin-top: 0.2rem;
+}
+
+/* "Reservasi Saya" selalu bentuk card lewat CSS Grid - 2 kolom penuh di HP/tablet, auto-fill dibatasi 220-260px di >=768px biar tidak melebar kebesaran. */
+.table-card-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+}
+
+@media (min-width: 768px) {
     .table-card-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 18px;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 260px));
     }
+}
 
-    .table-card-grid .table-card-item {
-        padding: 0.6rem 0.75rem;
-    }
+.table-card-grid .table-card-item {
+    padding: 0.6rem 0.75rem;
+    margin-bottom: 0;
+}
 
-    .table-card-grid .table-card-item-title {
-        font-size: 0.82rem;
-        margin-bottom: 0.45rem;
-        padding-bottom: 0.35rem;
-    }
+.table-card-grid .table-card-item-title {
+    font-size: 0.82rem;
+    margin-bottom: 0.45rem;
+    padding-bottom: 0.35rem;
+}
 
-    .table-card-grid .table-card-item-label {
-        font-size: 0.68rem;
+.table-card-grid .table-card-item-label {
+    font-size: 0.68rem;
+}
+
+.table-card-grid .table-card-item-value {
+    font-size: 0.85rem;
+}
+
+.table-card-grid .table-card-item-cols,
+.table-card-grid .table-card-item-row {
+    margin-bottom: 0.5rem;
+}
+
+.table-card-grid .table-card-item-footer {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    gap: 0.4rem;
+}
+
+.table-card-grid .table-card-item-footer .btn {
+    min-height: 38px;
+    font-size: 0.8rem;
+}
+
+/* 2 kolom bikin card sempit di HP, jadi label & value ditumpuk vertikal biar teks panjang wrap ke bawah, tidak overflow horizontal. */
+@media (max-width: 575.98px) {
+    .table-card-grid .table-card-item-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.15rem;
     }
 
     .table-card-grid .table-card-item-value {
-        font-size: 0.85rem;
-    }
-
-    .table-card-grid .table-card-item-cols,
-    .table-card-grid .table-card-item-row {
-        margin-bottom: 0.5rem;
-    }
-
-    .table-card-grid .table-card-item-footer {
-        margin-top: 0.5rem;
-        padding-top: 0.5rem;
-        gap: 0.4rem;
-    }
-
-    .table-card-grid .table-card-item-footer .btn {
-        min-height: 38px;
-        font-size: 0.8rem;
+        text-align: left;
     }
 }
 
-/* Baris info di halaman Detail Reservasi (reservasi/show.blade.php) -
-   padding-bawah tunggal (bukan ditambah flex-gap lagi) supaya jarak
-   antar baris konsisten ~11px, padat tapi tetap mudah dibaca, agar
-   seluruh detail muat dalam satu layar tanpa scroll. */
+/* Padding-bawah tunggal (bukan flex-gap juga) biar jarak antar baris konsisten & padat. */
 .reservasi-detail-row {
     padding-bottom: 0.7rem;
 }
@@ -815,10 +1340,7 @@ a {
     overflow-y: auto;
 }
 
-/* ===================================================== */
-/* Stepper progress reservasi (Dipesan -> Dikonfirmasi -> */
-/* Selesai) di card "Reservasi Terdekat" dashboard.        */
-/* ===================================================== */
+/* Stepper progress reservasi di card "Reservasi Terdekat" dashboard. */
 .reservasi-stepper {
     display: flex;
     align-items: flex-start;
@@ -841,18 +1363,34 @@ a {
 }
 
 .reservasi-stepper-step.is-active .reservasi-stepper-dot {
-    background-color: #facc15;
-    border-color: #facc15;
+    background-color: var(--color-gold);
+    border-color: var(--color-gold);
 }
 
 .reservasi-stepper-label {
     font-size: 0.75rem;
     color: var(--bs-secondary-color);
-    white-space: nowrap;
+    text-align: center;
+    overflow-wrap: break-word;
+}
+
+/* 4 label + connector bisa melebihi lebar card di layar sempit dan malah terpotong (guard overflow-x global), jadi dikecilkan + step dibatasi max-width biar kata panjang seperti "Dikonfirmasi" mau wrap. */
+@media (max-width: 400px) {
+    .reservasi-stepper-label {
+        font-size: 0.62rem;
+    }
+
+    .reservasi-stepper-step {
+        max-width: 3.4rem;
+    }
+
+    .reservasi-stepper-connector {
+        margin: 0.4rem 0.1rem 0;
+    }
 }
 
 .reservasi-stepper-step.is-active .reservasi-stepper-label {
-    color: #facc15;
+    color: var(--color-gold);
     font-weight: 600;
 }
 
@@ -865,17 +1403,10 @@ a {
 }
 
 .reservasi-stepper-connector.is-active {
-    background-color: #facc15;
+    background-color: var(--color-gold);
 }
 
-/* ===================================================== */
-/* Widget rating bintang 1-5 (murni CSS, tanpa JS).       */
-/* Urutan input di DOM sengaja terbalik (5..1) supaya     */
-/* selector "~" (general sibling) bisa menyorot bintang   */
-/* di sebelah kiri saat salah satu di-hover/dipilih,       */
-/* lalu flex-direction: row-reverse mengembalikan urutan   */
-/* visualnya jadi 1..5 dari kiri ke kanan.                 */
-/* ===================================================== */
+/* Widget rating murni CSS - input di DOM terbalik (5..1) biar selector "~" bisa menyorot bintang kiri, row-reverse mengembalikan urutan visual jadi 1..5. */
 .rating-stars {
     display: flex;
     flex-direction: row-reverse;
@@ -897,23 +1428,17 @@ a {
 .rating-stars input:checked ~ label,
 .rating-stars label:hover,
 .rating-stars label:hover ~ label {
-    color: #facc15;
+    color: var(--color-gold);
 }
 
-/* Halaman "Akun" (profile/edit.blade.php) - dibatasi lebih sempit
-   supaya form tidak melebar penuh sampai ke tepi layar pada layar
-   lebar. Diletakkan setelah bootstrap.min.css di <head>, jadi aturan
-   max-width di sini otomatis menang atas max-width bawaan .container
-   di semua breakpoint tanpa perlu !important. */
+/* Halaman "Akun" dibatasi lebih sempit biar form tidak melebar sampai tepi layar lebar. */
 .profile-page-container {
     max-width: 900px;
     margin-left: auto;
     margin-right: auto;
 }
 
-/* Kolom form di halaman "Akun" - satu kolom penuh (Informasi Profil,
-   Ubah Kata Sandi, Hapus Akun ditumpuk vertikal), dibuat sedikit lebih
-   sempit dari .profile-page-container supaya form terasa fokus. */
+/* Sedikit lebih sempit dari .profile-page-container biar form terasa fokus. */
 .profile-forms-stack {
     max-width: 575px;
 }
@@ -931,7 +1456,7 @@ a {
     width: 1.5rem;
     height: 1.5rem;
     border-radius: 50%;
-    background-color: #facc15;
+    background-color: var(--color-gold);
     color: #111827;
     display: flex;
     align-items: center;
@@ -949,19 +1474,23 @@ a {
     border-width: 1.5px;
 }
 
-/* ===================================================== */
-/* Tab bergaya dark+gold - dipakai di halaman "Akun"          */
-/* (profile/edit.blade.php, 3 form Informasi Profil/Ubah Kata  */
-/* Sandi/Hapus Akun). Warna tab disamakan dengan tema dark+gold */
-/* (bukan style terang bawaan Bootstrap).                        */
-/* ===================================================== */
+/* Touch target ~17px terlalu kecil, dinaikkan ke ~28px di mobile (bukan 44px penuh biar tidak lebih besar dari avatarnya). */
+@media (max-width: 575.98px) {
+    .profile-avatar-edit-badge-sm {
+        width: 1.75rem;
+        height: 1.75rem;
+        font-size: 0.75rem;
+    }
+}
+
+/* Tab bergaya dark+gold di halaman "Akun", bukan style terang bawaan Bootstrap. */
 .profile-nav-tabs {
-    border-bottom: 1px solid rgba(250, 204, 21, 0.25);
+    border-bottom: 1px solid rgba(var(--color-gold-rgb), 0.25);
 }
 
 .profile-nav-tabs .nav-link {
     /* !important di sini sengaja dipakai untuk menang atas aturan
-       global ".nav-link.active { color: #facc15 !important; }" (lihat
+       global ".nav-link.active { color: var(--color-gold) !important; }" (lihat
        di atas, dipakai untuk offcanvas/sidebar nav) - tanpa ini, teks
        tab aktif ikut jadi gold di atas background gold (tidak
        kontras/tidak kebaca). */
@@ -980,7 +1509,7 @@ a {
 }
 
 .profile-nav-tabs .nav-link:hover {
-    color: #facc15 !important;
+    color: var(--color-gold) !important;
     border-color: transparent;
     isolation: isolate;
 }
@@ -988,74 +1517,116 @@ a {
 .profile-nav-tabs .nav-link.active,
 .profile-nav-tabs .nav-link.active:hover {
     color: #0f172a !important;
-    background-color: #facc15;
-    border-color: #facc15;
+    background-color: var(--color-gold);
+    border-color: var(--color-gold);
+}
+
+/* Tab dengan label 2-3 kata berisiko wrap di layar sangat sempit, jadi padding & font dikecilkan supaya tetap 1 baris. */
+@media (max-width: 400px) {
+    .profile-nav-tabs .nav-link {
+        padding: 0.5rem 0.4rem;
+        font-size: 0.78rem;
+    }
 }
 
 .profile-tab-content {
     border-top-left-radius: 0 !important;
 }
 
-/* ===================================================== */
-/* Tab Status "Kelola Reservasi" admin - dipisah sendiri (BUKAN */
-/* berbagi style dengan .profile-nav-tabs) supaya bisa dibuat    */
-/* lebih ringkas & kontrasnya lebih jelas: tab TIDAK aktif tanpa  */
-/* warna gold sama sekali (cuma teks putih/abu + border-bottom    */
-/* tipis), tab AKTIF tetap solid gold dengan teks gelap.           */
-/* ===================================================== */
+/* Tab Status "Kelola Reservasi" admin, dipisah sendiri dari .profile-nav-tabs supaya tiap tab tampil sebagai kotak sendiri (aktif = solid gold, tidak aktif = gelap semi-transparan). */
+/* Bar pembungkus baris tab Status, background semi-transparan agar tab terlihat sebagai satu komponen di atas foto background admin. */
+.admin-reservasi-tabs-bar {
+    background: rgba(31, 41, 55, 0.4);
+    border-radius: 0.6rem;
+    padding: 0.65rem 0.85rem;
+}
+
 .admin-reservasi-tabs {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-    row-gap: 0.25rem;
+    row-gap: 0.4rem;
+    column-gap: 0.4rem;
+}
+
+/* Semua status harus tetap terlihat sekaligus di HP, jadi dipakai grid 2 kolom (bukan flex-wrap bawaan .nav-tabs) supaya semua kotak status sama rata ukurannya. */
+@media (max-width: 575.98px) {
+    .admin-reservasi-tabs {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.4rem;
+    }
+
+    .admin-reservasi-tabs .nav-link {
+        width: 100%;
+        height: 2.6rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 0.3rem 0.4rem;
+        font-size: 0.68rem;
+        line-height: 1.15;
+        overflow-wrap: break-word;
+    }
+}
+
+/* Lebar tombol diseragamkan hanya di atas breakpoint mobile, supaya tidak bentrok dengan grid 2 kolom yang dipakai di layar sempit. */
+@media (min-width: 576px) {
+    .admin-reservasi-tabs .nav-link {
+        justify-content: center;
+        min-width: 9.5rem;
+        white-space: nowrap;
+    }
 }
 
 .admin-reservasi-tabs .nav-link {
-    /* !important supaya menang atas aturan global
-       ".nav-link.active { color: #facc15 !important; }" - tanpa ini
-       tab aktif ikut jadi gold-di-atas-gold (lihat penjelasan yang
-       sama di blok .profile-nav-tabs di atas). */
-    color: #9ca3af !important;
-    background: transparent;
-    border: none;
-    border-bottom: 2px solid transparent;
-    border-radius: 0.35rem 0.35rem 0 0;
+    /* !important supaya menang atas aturan global .nav-link.active, sama seperti alasan di blok .profile-nav-tabs. */
+    color: #cbd5e1 !important;
+    background-color: rgba(30, 41, 59, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 0.5rem;
     font-weight: 600;
     font-size: 0.78rem;
-    padding: 0.5rem 0.65rem;
+    padding: 0.45rem 0.75rem;
+    margin: 0; /* netralkan margin-bottom: -1px bawaan Bootstrap .nav-tabs, supaya row-gap konsisten */
+    display: inline-flex;
+    align-items: center;
     transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
 }
 
 .admin-reservasi-tabs .nav-link:hover {
     color: #ffffff !important;
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: rgba(255, 255, 255, 0.08);
     border-color: rgba(255, 255, 255, 0.3);
 }
 
 .admin-reservasi-tabs .nav-link.active,
 .admin-reservasi-tabs .nav-link.active:hover {
     color: #0f172a !important;
-    background-color: #facc15;
-    border-color: #facc15;
+    background-color: var(--color-gold);
+    border-color: var(--color-gold);
 }
 
 .admin-reservasi-tabs .nav-link .badge {
+    /* Ukuran & posisi seragam di semua tab yang punya badge, bukan
+       cuma mengikuti tinggi teks label (yang bisa beda-beda). */
     margin-left: 0.375rem; /* ~6px, sedikit jarak dari label supaya tidak menempel */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.35rem;
+    height: 1.35rem;
+    padding: 0 0.3rem;
+    font-size: 0.68rem;
+    line-height: 1;
 }
 
-/* Garis pemisah + jarak antara baris tab Status dan baris filter
-   Metode Pembayaran di bawahnya, supaya kelihatan sebagai 2 kelompok
-   filter yang terpisah, bukan menyatu. */
+/* Garis pemisah antara baris tab Status dan baris filter Metode Pembayaran, supaya terlihat sebagai 2 kelompok filter yang terpisah. */
 .admin-payment-filter-row {
     margin-top: 1rem; /* 16px */
     padding-top: 1rem;
     border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* ===================================================== */
-/* Card metode pembayaran online (reservasi/create.blade.php) */
-/* - disusun grid 2/3 kolom berdampingan (lihat .row.g-2 di   */
-/* Blade), jadi tiap card dibuat ringkas: padding kecil, ikon  */
-/* diperkecil, radio di sisi kiri, tanpa teks deskripsi.        */
-/* ===================================================== */
+/* Card metode pembayaran online (reservasi/create.blade.php), dibuat ringkas karena disusun grid 2/3 kolom berdampingan. */
 .payment-channel-card {
     display: flex;
     align-items: center;
@@ -1063,27 +1634,22 @@ a {
     height: 100%;
     padding: 0.55rem 0.65rem;
     border-radius: 0.6rem;
-    border: 1px solid rgba(250, 204, 21, 0.15);
+    border: 1px solid rgba(var(--color-gold-rgb), 0.15);
     cursor: pointer;
     transition: border-color 0.2s ease;
 }
 
 .payment-channel-card:hover {
-    border-color: rgba(250, 204, 21, 0.45);
+    border-color: rgba(var(--color-gold-rgb), 0.45);
 }
 
 .payment-channel-card:has(.form-check-input:checked) {
-    border-color: #facc15;
-    box-shadow: 0 0 0 1px rgba(250, 204, 21, 0.4);
+    border-color: var(--color-gold);
+    box-shadow: 0 0 0 1px rgba(var(--color-gold-rgb), 0.4);
 }
 
 .payment-channel-card .form-check-input {
     margin-top: 0;
-}
-
-.payment-channel-icon {
-    font-size: 1.05rem;
-    line-height: 1;
 }
 
 .payment-channel-name {
@@ -1091,12 +1657,18 @@ a {
     font-size: 0.82rem;
 }
 
-/* ===================================================== */
-/* Card pilihan barber (reservasi/create.blade.php) - sama    */
-/* gaya dengan .payment-channel-card, ditambah state disabled  */
-/* untuk barber yang sudah terisi di jam yang dipilih ("Sedang  */
-/* Bertugas"). */
-/* ===================================================== */
+/* Nama channel yang panjang (mis. "Transfer Bank") berisiko wrap 2 baris di kartu col-6, jadi font dikecilkan; breakpoint dilebarkan ke 575.98px karena card induk sekarang dipatok max-width 400px. */
+@media (max-width: 575.98px) {
+    .payment-channel-card {
+        padding: 0.45rem 0.5rem;
+    }
+
+    .payment-channel-name {
+        font-size: 0.74rem;
+    }
+}
+
+/* Card pilihan barber (reservasi/create.blade.php), sama gaya dengan .payment-channel-card, ditambah state disabled untuk barber yang sudah terisi di jam yang dipilih. */
 .barber-choice-card {
     display: flex;
     flex-direction: column;
@@ -1105,19 +1677,19 @@ a {
     gap: 0.3rem;
     padding: 0.65rem 0.5rem;
     border-radius: 0.6rem;
-    border: 1px solid rgba(250, 204, 21, 0.15);
+    border: 1px solid rgba(var(--color-gold-rgb), 0.15);
     background: rgba(55, 65, 81, 0.6);
     cursor: pointer;
     transition: border-color 0.2s ease;
 }
 
 .barber-choice-card:hover {
-    border-color: rgba(250, 204, 21, 0.45);
+    border-color: rgba(var(--color-gold-rgb), 0.45);
 }
 
 .barber-choice-card:has(.form-check-input:checked) {
-    border-color: #facc15;
-    box-shadow: 0 0 0 1px rgba(250, 204, 21, 0.4);
+    border-color: var(--color-gold);
+    box-shadow: 0 0 0 1px rgba(var(--color-gold-rgb), 0.4);
 }
 
 .barber-choice-card .form-check-input {
@@ -1126,12 +1698,32 @@ a {
 
 .barber-choice-icon {
     font-size: 1.35rem;
-    color: #facc15;
+    color: var(--color-gold);
+}
+
+.barber-choice-avatar {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid rgba(var(--color-gold-rgb), 0.35);
 }
 
 .barber-choice-name {
     font-weight: 600;
     font-size: 0.82rem;
+    overflow-wrap: break-word;
+}
+
+/* Nama barber yang panjang berisiko wrap 2 baris, dikecilkan sedikit sama seperti .payment-channel-name di atas dengan alasan yang sama. */
+@media (max-width: 575.98px) {
+    .barber-choice-card {
+        padding: 0.5rem 0.4rem;
+    }
+
+    .barber-choice-name {
+        font-size: 0.74rem;
+    }
 }
 
 .barber-choice-status {
@@ -1147,15 +1739,10 @@ a {
 }
 
 .barber-choice-card-disabled:hover {
-    border-color: rgba(250, 204, 21, 0.15);
+    border-color: rgba(var(--color-gold-rgb), 0.15);
 }
 
-/* ===================================================== */
-/* Kartu Member Digital (dashboard pelanggan) - dibuat        */
-/* menyerupai kartu kredit virtual: rounded besar, gradient    */
-/* warna sesuai level, sedikit efek shine berjalan + tilt 3D   */
-/* ringan saat hover supaya terasa premium.                     */
-/* ===================================================== */
+/* Kartu Member Digital (dashboard pelanggan), dibuat menyerupai kartu kredit virtual dengan efek shine dan tilt 3D ringan saat hover supaya terasa premium. */
 .member-card {
     position: relative;
     overflow: hidden;
@@ -1209,7 +1796,7 @@ a {
 }
 
 .member-card-gold {
-    background: linear-gradient(135deg, #92660a 0%, #d99a1c 45%, #fde047 100%);
+    background: linear-gradient(135deg, #92660a 0%, #d99a1c 45%, var(--color-gold-hover) 100%);
 }
 
 .member-card-label {
@@ -1234,7 +1821,7 @@ a {
 
 .member-card-number {
     font-family: 'Courier New', Courier, monospace;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.15em;
     font-size: 1.05rem;
     font-weight: 700;
 }
@@ -1245,8 +1832,7 @@ a {
     margin-bottom: 0.15rem;
 }
 
-/* Ikon badge/achievement (Tahap 2) - baris ikon kecil di bawah kartu
-   member, tooltip menampilkan nama & syarat badge saat di-hover. */
+/* Ikon badge/achievement di bawah kartu member; tooltip menampilkan nama & syarat badge saat di-hover. */
 .member-badge-icon {
     display: inline-flex;
     align-items: center;
@@ -1254,66 +1840,74 @@ a {
     width: 2.25rem;
     height: 2.25rem;
     border-radius: 50%;
-    background: rgba(250, 204, 21, 0.15);
-    border: 1px solid rgba(250, 204, 21, 0.4);
-    color: #facc15;
+    background: rgba(var(--color-gold-rgb), 0.15);
+    border: 1px solid rgba(var(--color-gold-rgb), 0.4);
+    color: var(--color-gold);
     cursor: default;
     transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
 .member-badge-icon:hover {
     transform: translateY(-2px) scale(1.08);
-    background: rgba(250, 204, 21, 0.28);
+    background: rgba(var(--color-gold-rgb), 0.28);
 }
 
-/* Card foto before/after di section "Transformasi Kamu" - bisa diklik
-   untuk membuka modal ukuran penuh, sedikit efek hover supaya terasa
-   jelas bisa diklik. */
+/* Card foto before/after di section "Transformasi Kamu", bisa diklik untuk membuka modal ukuran penuh, diberi efek hover supaya terasa jelas bisa diklik. */
 .transformasi-card {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .transformasi-card:hover {
     transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 0.5rem 1.25rem rgba(250, 204, 21, 0.2);
+    box-shadow: 0 0.5rem 1.25rem rgba(var(--color-gold-rgb), 0.2);
 }
 
-/* Form di dalam tab dipadatkan lagi: jarak label-ke-input dan tinggi
-   input dikecilkan supaya konten tab (khususnya form 3 field) tetap
-   ringkas. */
+/* Form di dalam tab dipadatkan lagi supaya konten tab (khususnya form 3 field) tetap ringkas. */
 .profile-tab-content .form-label {
     font-size: 0.85rem;
 }
 
-/* Panel profil (offcanvas) - glassmorphism, konsisten dengan tema.
-   Slide dari kiri (offcanvas-start), jadi border aksen ada di kanan
-   (sisi yang berbatasan dengan konten halaman). */
+/* Panel profil (offcanvas) bergaya glassmorphism; slide dari kiri, jadi border aksen ada di kanan (sisi yang berbatasan dengan konten halaman). */
 .profil-offcanvas {
     --bs-offcanvas-width: 300px;
     background: rgba(17, 24, 39, 0.75);
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
-    border-right: 1px solid rgba(250, 204, 21, 0.3);
+    border-right: 1px solid rgba(var(--color-gold-rgb), 0.3);
 }
 
-/* Offcanvas menu di landing page (welcome.blade.php) - Bootstrap
-   defaultnya 400px kalau tidak diatur, jadi disempitkan supaya
-   konsisten dan tidak makan tempat terlalu banyak, sama seperti
-   offcanvas "Profil Saya" di halaman pelanggan. */
+/* Offcanvas menu landing page disempitkan dari default Bootstrap 400px, sama seperti offcanvas "Profil Saya" di halaman pelanggan. */
 #menuUtama {
     --bs-offcanvas-width: 300px;
 }
 
-/* Item menu di dalam offcanvas profil - gaya baris disamakan persis
-   dengan .admin-nav-link di sidebar admin: flex + gap supaya ikon dan
-   teks sejajar rapi, padding vertikal yang terasa seperti "baris",
-   border kiri gold tebal + background gold semi-transparan saat aktif,
-   hover halus saat tidak aktif. */
+/* Di HP kecil, 300px hampir menutupi seluruh layar - dipersempit jadi 50% lebar viewport khusus mobile. Desktop/tablet tetap 300px (rule di atas). */
+@media (max-width: 575.98px) {
+    #menuUtama,
+    .profil-offcanvas {
+        --bs-offcanvas-width: 50vw;
+    }
+}
+
+/* Navbar landing page disembunyikan seluruhnya saat offcanvas menu terbuka; visibility ikut ditransisikan (bukan cuma opacity) supaya navbar yang transparan tidak masih bisa diklik/di-tab-focus. */
+#landingNavbar {
+    width: 100%;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+#landingNavbar.landing-navbar-hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* Item menu offcanvas profil, gaya baris disamakan dengan .admin-nav-link sidebar admin; padding-left sengaja 0 supaya teks sejajar dengan judul header offcanvas. */
 .offcanvas-nav-link {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.65rem 1rem;
+    padding: 0.65rem 1rem 0.65rem 0;
     border-radius: 0.5rem;
     font-size: 1.0625rem; /* ~17px */
     color: #d1d5db;
@@ -1331,14 +1925,14 @@ a {
 }
 
 .offcanvas-nav-link:hover {
-    background-color: rgba(250, 204, 21, 0.08);
+    background-color: rgba(var(--color-gold-rgb), 0.08);
     color: #ffffff;
 }
 
 .offcanvas-nav-link.active {
-    background-color: rgba(250, 204, 21, 0.15);
-    border-left-color: #facc15;
-    color: #facc15;
+    background-color: rgba(var(--color-gold-rgb), 0.15);
+    border-left-color: var(--color-gold);
+    color: var(--color-gold);
     font-weight: 600;
 }
 
@@ -1347,12 +1941,7 @@ a {
     flex-shrink: 0;
 }
 
-/* Tombol accordion/collapse di dalam offcanvas profil (Layanan
-   Favorit, Info Barbershop) - menyatu 100% dengan .offcanvas-nav-link
-   di atas (sudah dapat flex/gap/padding/hover dari situ), cuma beda
-   elemennya jadi <button> supaya bisa jadi trigger Bootstrap Collapse.
-   Reset default styling <button> bawaan browser dan Bootstrap .btn
-   supaya tidak ada border/background tambahan sama sekali. */
+/* Tombol accordion/collapse offcanvas profil, menyatu gayanya dengan .offcanvas-nav-link tapi elemennya <button> supaya bisa jadi trigger Bootstrap Collapse. */
 .offcanvas-collapse-toggle {
     background: transparent;
     border-left: 3px solid transparent;
@@ -1361,7 +1950,7 @@ a {
 }
 
 .offcanvas-collapse-toggle:hover {
-    background-color: rgba(250, 204, 21, 0.08);
+    background-color: rgba(var(--color-gold-rgb), 0.08);
     color: #ffffff;
 }
 
@@ -1374,20 +1963,13 @@ a {
     transform: rotate(180deg);
 }
 
-/* Konten yang muncul saat di-expand - sub-item dengan indentasi kiri
-   (sejajar dengan teks menu di atasnya, bukan ikonnya), tanpa card/
-   background terpisah, dan TIDAK dibatasi overflow supaya Bootstrap
-   Collapse bebas mengatur tinggi (height: auto) tanpa ada yang
-   terpotong. */
+/* Konten yang muncul saat di-expand, overflow dibiarkan visible supaya Bootstrap Collapse bebas mengatur tinggi tanpa ada yang terpotong. */
 .offcanvas-collapse-body {
     padding: 0.25rem 1rem 0.75rem 2.75rem;
     overflow: visible;
 }
 
-/* Efek "push": konten utama digeser ke kanan saat offcanvas profil
-   terbuka (bukan ditutupi backdrop gelap seperti overlay bawaan).
-   Hanya diterapkan di layar >=576px supaya konten tidak terdorong
-   sampai keluar layar di HP kecil. */
+/* Efek "push": konten utama digeser ke kanan saat offcanvas profil terbuka, hanya di layar >=576px supaya konten tidak terdorong keluar layar di HP kecil. */
 main {
     transition: margin-left 0.3s ease;
 }

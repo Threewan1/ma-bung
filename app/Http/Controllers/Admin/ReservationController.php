@@ -3,31 +3,29 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Reservation;
-use App\Models\Service;
+use App\Mail\PaymentConfirmed;
+use App\Mail\ReservationCancelled;
+use App\Mail\ReservationConfirmed;
 use App\Models\Queue;
+use App\Models\Reservation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
 class ReservationController extends Controller
 {
-    // Menampilkan semua data reservasi untuk admin
+    // Semua reservasi untuk halaman Kelola Reservasi.
     public function index()
     {
-        // Ambil semua reservasi beserta relasi user, service, dan barber
         $reservations = Reservation::with('user', 'service', 'queue', 'barber')
-            ->latest() // urutkan dari yang terbaru
+            ->latest()
             ->get();
 
         return view('admin.reservasi.index', compact('reservations'));
     }
 
-    // Endpoint JSON ringan - dipoll berkala oleh JS di halaman "Kelola
-    // Reservasi" (tiap ~15 detik) supaya admin tahu ada perubahan status
-    // pelayanan (barber menekan "Mulai Layani"/"Selesai") atau status
-    // pembayaran, TANPA perlu me-render ulang seluruh tabel tiap kali
-    // poll - "signature" dibandingkan di JS, HTML tab cuma diambil
-    // ulang (lewat tabContent() di bawah) kalau memang ada yang beda.
+    // Dipoll tiap ~15 detik, cuma kirim signature ringan biar tabel tidak dirender ulang kalau tidak ada yang berubah.
     public function statusUpdates()
     {
         $reservations = Reservation::orderBy('id')->get(['id', 'status', 'payment_status']);
@@ -37,10 +35,7 @@ class ReservationController extends Controller
         ]);
     }
 
-    // Endpoint AJAX - mengembalikan HTML tab status + isi tabel yang
-    // sudah dirender ulang (partial _tab-content.blade.php, SAMA persis
-    // dengan yang dipakai render awal index()), dipakai JS di
-    // index.blade.php untuk live-sync tanpa reload halaman penuh.
+    // Render ulang tab + tabel buat live-sync tanpa reload halaman penuh.
     public function tabContent()
     {
         $reservations = Reservation::with('user', 'service', 'queue', 'barber')
@@ -50,31 +45,58 @@ class ReservationController extends Controller
         return view('admin.reservasi._tab-content', compact('reservations'));
     }
 
-    // Mengupdate status reservasi
+    // Admin cuma boleh ubah 3 status ini; "Sedang Dilayani"/"Selesai" wewenang barber lewat halaman kerjanya sendiri.
     public function update(Request $request, Reservation $reservasi)
     {
-        // Validasi status yang boleh dipilih
+        // Reservasi online butuh bukti pembayaran dulu sebelum bisa dikonfirmasi, dicek di backend juga (bukan cuma disable di tampilan).
         $request->validate([
-            'status' => 'required|in:pending,confirmed,sedang_dilayani,cancelled,done',
+            'status' => [
+                'required',
+                'in:pending,confirmed,cancelled',
+                function ($attribute, $value, $fail) use ($reservasi) {
+                    if ($value === 'confirmed'
+                        && $reservasi->payment_method === 'online'
+                        && ! $reservasi->payment_proof) {
+                        $fail('Reservasi online ini belum bisa dikonfirmasi karena bukti pembayaran belum diunggah pelanggan.');
+                    }
+                },
+            ],
         ]);
 
-        $data = ['status' => $request->status];
+        // Simpan status lama dulu, dipakai nentuin email mana yang perlu dikirim berdasarkan transisinya.
+        $statusLama = $reservasi->status;
 
-        // Reservasi COD otomatis dianggap lunas begitu ditandai "Selesai" -
-        // COD dibayar tunai langsung di tempat saat layanan selesai
-        // dikerjakan, jadi tidak perlu langkah konfirmasi pembayaran
-        // terpisah seperti Online (yang tetap lewat verifikasi bukti
-        // transfer via modal, terlepas dari status reservasinya).
-        if ($request->status === 'done' && $reservasi->payment_method !== 'online') {
-            $data['payment_status'] = 'paid';
+        $reservasi->update(['status' => $request->status]);
+
+        // Cuma transisi Pending -> Dikonfirmasi yang dapat email, dibungkus try-catch biar gagal kirim tidak bikin request ini error.
+        if ($statusLama === 'pending' && $reservasi->status === 'confirmed') {
+            try {
+                Mail::to($reservasi->user->email)
+                    ->queue(new ReservationConfirmed($reservasi));
+            } catch (\Throwable $e) {
+                Log::error('Gagal mengirim email ReservationConfirmed', [
+                    'reservasi_id' => $reservasi->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
 
-        // Update status reservasi (+ status pembayaran untuk COD di atas)
-        $reservasi->update($data);
+        // Guard biar tidak dobel kalau memang sudah cancelled sebelumnya.
+        if ($statusLama !== 'cancelled' && $reservasi->status === 'cancelled') {
+            Queue::aturUlangNomorAntrian($reservasi->tanggal);
 
-        // Dipakai tombol "Konfirmasi" AJAX di dashboard admin (fetch
-        // dengan Accept: application/json) - balas JSON tanpa redirect,
-        // supaya baris tabelnya bisa diupdate langsung tanpa reload.
+            try {
+                Mail::to($reservasi->user->email)
+                    ->queue(new ReservationCancelled($reservasi));
+            } catch (\Throwable $e) {
+                Log::error('Gagal mengirim email ReservationCancelled', [
+                    'reservasi_id' => $reservasi->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        // Tombol "Konfirmasi" AJAX di dashboard minta JSON, bukan redirect.
         if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,
@@ -86,27 +108,57 @@ class ReservationController extends Controller
             ->with('success', 'Status reservasi berhasil diupdate!');
     }
 
-    // Menghapus data reservasi
     public function destroy(Reservation $reservasi)
     {
-        // Hapus reservasi dari database
+        // Simpan tanggalnya dulu, karena setelah dihapus reservasi lain di tanggal yang sama masih perlu dihitung ulang nomor antriannya.
+        $tanggal = $reservasi->tanggal;
+
         $reservasi->delete();
+
+        Queue::aturUlangNomorAntrian($tanggal);
 
         return redirect()->route('admin.reservasi.index')
             ->with('success', 'Reservasi berhasil dihapus!');
     }
 
-    // Mengonfirmasi atau menolak bukti pembayaran online yang diunggah
-    // pelanggan (via modal). Pembayaran COD tidak lewat method ini -
-    // lihat update() di atas, payment_status-nya otomatis jadi "paid"
-    // begitu status reservasi ditandai "Selesai".
+    // Dipakai modal Konfirmasi/Tolak bukti online DAN tombol "Tandai Lunas" COD - terpisah dari update() karena "Selesai" tidak otomatis berarti "Lunas".
     public function updatePaymentStatus(Request $request, Reservation $reservasi)
     {
         $request->validate([
             'payment_status' => 'required|in:paid,rejected',
         ]);
 
-        $reservasi->update(['payment_status' => $request->payment_status]);
+        $paymentStatusLama = $reservasi->payment_status;
+
+        // Kosongkan payment_proof kalau ditolak, biar form upload ulang otomatis muncul lagi di halaman pelanggan.
+        $updateData = ['payment_status' => $request->payment_status];
+
+        if ($request->payment_status === 'rejected') {
+            if ($reservasi->payment_proof) {
+                Storage::disk('public')->delete($reservasi->payment_proof);
+            }
+            $updateData['payment_proof'] = null;
+        }
+
+        // Dipakai acuan bulan di laporan "Total Pendapatan Bulan Ini".
+        if ($request->payment_status === 'paid') {
+            $updateData['payment_confirmed_at'] = now();
+        }
+
+        $reservasi->update($updateData);
+
+        // Cuma kirim email kalau memang baru berubah jadi "paid".
+        if ($paymentStatusLama !== 'paid' && $reservasi->payment_status === 'paid') {
+            try {
+                Mail::to($reservasi->user->email)
+                    ->queue(new PaymentConfirmed($reservasi));
+            } catch (\Throwable $e) {
+                Log::error('Gagal mengirim email PaymentConfirmed', [
+                    'reservasi_id' => $reservasi->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
 
         $pesan = $request->payment_status === 'paid'
             ? 'Pembayaran berhasil dikonfirmasi (Lunas)!'
@@ -116,37 +168,5 @@ class ReservationController extends Controller
             ->with('success', $pesan);
     }
 
-    // Upload foto before & after untuk reservasi yang sudah selesai
-    // (dipakai galeri "Transformasi Kamu" di dashboard pelanggan)
-    public function uploadTransformasi(Request $request, Reservation $reservasi)
-    {
-        if ($reservasi->status !== 'done') {
-            return redirect()->route('admin.reservasi.index')
-                ->with('error', 'Foto before/after hanya bisa diunggah untuk reservasi yang sudah selesai.');
-        }
-
-        $request->validate([
-            'foto_before' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-            'foto_after' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-        ]);
-
-        if ($request->hasFile('foto_before')) {
-            if ($reservasi->foto_before) {
-                Storage::disk('public')->delete($reservasi->foto_before);
-            }
-            $reservasi->foto_before = $request->file('foto_before')->store('transformasi', 'public');
-        }
-
-        if ($request->hasFile('foto_after')) {
-            if ($reservasi->foto_after) {
-                Storage::disk('public')->delete($reservasi->foto_after);
-            }
-            $reservasi->foto_after = $request->file('foto_after')->store('transformasi', 'public');
-        }
-
-        $reservasi->save();
-
-        return redirect()->route('admin.reservasi.index')
-            ->with('success', 'Foto before/after berhasil disimpan!');
-    }
+    // Upload foto before/after sudah dipindah ke Barber\DashboardController::uploadTransformasi().
 }

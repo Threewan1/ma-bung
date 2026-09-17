@@ -2,7 +2,7 @@
 
     <div class="mx-auto" style="max-width: 36rem;">
         <h2 class="fs-2 fw-bold text-gold mb-4">
-            <i class="fas fa-edit"></i> Edit Layanan
+            Edit Layanan
         </h2>
 
         <div class="bg-panel p-4 rounded-3 shadow">
@@ -19,7 +19,7 @@
             @endif
 
             {{-- Form menggunakan method PUT untuk update --}}
-            <form method="POST" action="/admin/layanan/{{ $layanan->id }}">
+            <form method="POST" action="/admin/layanan/{{ $layanan->id }}" enctype="multipart/form-data">
                 @csrf
                 @method('PUT') {{-- Memberitahu Laravel bahwa ini adalah request UPDATE --}}
 
@@ -32,11 +32,22 @@
                 </div>
 
                 {{-- Input Harga dengan nilai yang sudah ada --}}
-                <div class="mb-4">
+                <div class="mb-3">
                     <label class="form-label">Harga (Rp)</label>
                     <input type="number" name="harga"
                         value="{{ old('harga', $layanan->harga) }}"
                         class="form-control">
+                </div>
+
+                {{-- Foto Layanan saat ini + input ganti foto --}}
+                <div class="mb-4">
+                    <label class="form-label">Foto Layanan</label>
+                    @if($layanan->foto)
+                        <img src="{{ asset('storage/' . $layanan->foto) }}" alt="{{ $layanan->nama_layanan }}"
+                            class="rounded-3 mb-2 d-block" style="width: 100%; max-width: 12rem; height: 8rem; object-fit: cover;">
+                    @endif
+                    <input type="file" name="foto" accept="image/*" class="form-control">
+                    <small class="text-body-secondary">Kosongkan kalau tidak ingin mengganti foto.</small>
                 </div>
 
                 {{-- Tombol Update --}}

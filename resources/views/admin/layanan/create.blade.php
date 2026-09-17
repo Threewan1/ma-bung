@@ -2,7 +2,7 @@
 
     <div class="mx-auto" style="max-width: 36rem;">
         <h2 class="fs-2 fw-bold text-gold mb-4">
-            <i class="fas fa-plus"></i> Tambah Layanan
+            Tambah Layanan
         </h2>
 
         <div class="bg-panel p-4 rounded-3 shadow">
@@ -18,7 +18,7 @@
                 </div>
             @endif
 
-            <form method="POST" action="/admin/layanan">
+            <form method="POST" action="/admin/layanan" enctype="multipart/form-data">
                 @csrf
 
                 {{-- Input Nama Layanan --}}
@@ -31,12 +31,18 @@
                 </div>
 
                 {{-- Input Harga --}}
-                <div class="mb-4">
+                <div class="mb-3">
                     <label class="form-label">Harga (Rp)</label>
                     <input type="number" name="harga"
                         value="{{ old('harga') }}"
                         placeholder="Contoh: 50000"
                         class="form-control">
+                </div>
+
+                {{-- Input Foto Layanan --}}
+                <div class="mb-4">
+                    <label class="form-label">Foto Layanan (opsional)</label>
+                    <input type="file" name="foto" accept="image/*" class="form-control">
                 </div>
 
                 {{-- Tombol Simpan --}}

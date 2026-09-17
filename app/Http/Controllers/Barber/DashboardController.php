@@ -4,59 +4,89 @@ namespace App\Http\Controllers\Barber;
 
 use App\Http\Controllers\Controller;
 use App\Models\Reservation;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class DashboardController extends Controller
 {
-    // Menampilkan halaman kerja barber - reservasi 7 hari ke depan
-    // (hari ini s.d. 6 hari ke depan) yang di-assign ke barber yang
-    // sedang login, dikelompokkan per tanggal (label nama hari
-    // Indonesia + tanggal) dan diurutkan berdasarkan jam. Hari yang
-    // tidak punya reservasi sama sekali disembunyikan di view (lihat
-    // barber/dashboard.blade.php) - filter kosongnya dilakukan di sana,
-    // bukan di sini, supaya view masih bisa cek "apakah semua 7 hari
-    // kosong" untuk menampilkan pesan umum.
+    // Halaman kerja barber: cuma reservasi yang masih perlu ditindak (Dikonfirmasi/Sedang Dilayani, hari ini ke depan), urut jadwal paling dekat.
     public function index()
     {
         $barber = Auth::user()->barber;
 
-        $jadwal = collect(range(0, 6))->map(function ($mundur) use ($barber) {
-            $tanggal = today()->addDays($mundur);
+        $reservasiPerluDitindak = $barber
+            ? Reservation::with('user', 'service')
+                ->where('barber_id', $barber->id)
+                ->whereIn('status', ['confirmed', 'sedang_dilayani'])
+                ->whereDate('tanggal', '>=', today())
+                ->orderBy('tanggal')
+                ->orderBy('jam')
+                ->get()
+            : collect();
 
-            $reservasi = $barber
-                ? Reservation::with('user', 'service')
-                    ->where('barber_id', $barber->id)
-                    ->whereDate('tanggal', $tanggal->toDateString())
-                    ->where('status', '!=', 'cancelled')
-                    ->orderBy('jam')
-                    ->get()
-                : collect();
+        // Query terpisah dari $reservasiPerluDitindak - progress harian butuh SEMUA status hari ini termasuk yang sudah "done".
+        $reservasiHariIni = $barber
+            ? Reservation::where('barber_id', $barber->id)
+                ->whereDate('tanggal', today())
+                ->where('status', '!=', 'cancelled')
+                ->get(['id', 'status'])
+            : collect();
 
-            return [
-                'tanggal' => $tanggal->toDateString(),
-                // Nama hari Indonesia + tanggal, mis. "Senin, 01 September 2026"
-                'label' => $tanggal->translatedFormat('l, d F Y'),
-                'reservasi' => $reservasi,
-            ];
-        });
+        $dilayaniBulanIni = $barber
+            ? Reservation::where('barber_id', $barber->id)
+                ->where('status', 'done')
+                ->whereMonth('tanggal', today()->month)
+                ->whereYear('tanggal', today()->year)
+                ->count()
+            : 0;
 
-        // Dipakai view untuk menampilkan pesan umum kalau ketujuh hari
-        // sama sekali tidak ada reservasi (bukan cuma "hari ini" saja).
-        $adaJadwal = $jadwal->contains(fn ($hari) => $hari['reservasi']->isNotEmpty());
+        $totalHariIni = $reservasiHariIni->count();
+        $selesaiHariIni = $reservasiHariIni->where('status', 'done')->count();
+        $progressHariIniPersen = $totalHariIni > 0
+            ? intdiv($selesaiHariIni * 100, $totalHariIni)
+            : 0;
 
-        return view('barber.dashboard', compact('barber', 'jadwal', 'adaJadwal'));
+        // Reservasi "Dikonfirmasi" hari ini yang jamnya paling dekat dan belum lewat.
+        $sekarang = now();
+        $pelangganBerikutnya = $reservasiPerluDitindak
+            ->filter(fn ($r) => $r->status === 'confirmed' && Carbon::parse($r->tanggal)->isToday())
+            ->first(fn ($r) => Carbon::parse($r->jam)->format('H:i:s') >= $sekarang->format('H:i:s'));
+
+        return view('barber.dashboard', compact(
+            'barber',
+            'reservasiPerluDitindak',
+            'dilayaniBulanIni',
+            'totalHariIni',
+            'selesaiHariIni',
+            'progressHariIniPersen',
+            'pelangganBerikutnya'
+        ));
     }
 
-    // AJAX: barber mengubah status reservasi yang di-assign ke dirinya
-    // sendiri - "Mulai Layani" (Dikonfirmasi -> Sedang Dilayani) atau
-    // "Selesai" (Sedang Dilayani -> Selesai). Tanpa reload halaman.
+    // Halaman "Riwayat Saya": semua reservasi Selesai/Dibatalkan milik barber ini, terbaru dulu.
+    public function riwayat()
+    {
+        $barber = Auth::user()->barber;
+
+        $reservasiRiwayat = $barber
+            ? Reservation::with('user', 'service')
+                ->where('barber_id', $barber->id)
+                ->whereIn('status', ['done', 'cancelled'])
+                ->orderByDesc('tanggal')
+                ->orderByDesc('jam')
+                ->get()
+            : collect();
+
+        return view('barber.riwayat', compact('barber', 'reservasiRiwayat'));
+    }
+
+    // AJAX "Mulai Layani"/"Selesai" buat reservasi milik barber sendiri, tanpa reload.
     public function updateStatus(Request $request, Reservation $reservasi)
     {
         $barber = Auth::user()->barber;
 
-        // Barber cuma boleh mengubah reservasi yang di-assign ke
-        // dirinya sendiri, bukan milik barber lain.
         if (! $barber || $reservasi->barber_id !== $barber->id) {
             abort(403);
         }
@@ -65,9 +95,7 @@ class DashboardController extends Controller
             'status' => 'required|in:sedang_dilayani,done',
         ]);
 
-        // Hanya 2 transisi maju yang sah dari halaman ini - cegah
-        // barber "melompat" status dari luar alur seharusnya (mis.
-        // langsung dari pending ke selesai).
+        // Cuma 2 transisi maju yang sah, cegah barber "melompat" status.
         $statusAwalYangValid = [
             'sedang_dilayani' => 'confirmed',
             'done' => 'sedang_dilayani',
@@ -80,13 +108,7 @@ class DashboardController extends Controller
             ], 422);
         }
 
-        // Barber cuma mengubah status PELAYANAN (sedang_dilayani/done) -
-        // status PEMBAYARAN sengaja TIDAK ikut diubah di sini, beda dari
-        // Admin\ReservationController::update(). Konfirmasi pembayaran
-        // tetap wewenang admin (lewat modal bukti pembayaran untuk
-        // Online, atau tombol/dropdown status di panel admin untuk COD),
-        // supaya barber selesai melayani tidak otomatis dianggap "sudah
-        // dibayar" sebelum benar-benar dikonfirmasi admin.
+        // Cuma status pelayanan yang berubah, status pembayaran tetap wewenang admin.
         $reservasi->update(['status' => $request->status]);
 
         return response()->json([
@@ -95,18 +117,74 @@ class DashboardController extends Controller
         ]);
     }
 
-    // Endpoint JSON - dipoll berkala oleh JS di halaman kerja barber
-    // supaya status pelayanan/pembayaran ter-update otomatis tanpa
-    // reload, terutama saat ADMIN yang mengonfirmasi pembayaran
-    // (barber tidak bisa mengubah payment_status sendiri - lihat
-    // updateStatus() di atas). Dibatasi HANYA reservasi milik barber
-    // yang sedang login - tidak membocorkan data reservasi barber lain.
+    // Upload foto before/after, dipakai galeri "Transformasi Kamu" - syaratnya reservasi milik barber ini DAN sudah "done".
+    public function uploadTransformasi(Request $request, Reservation $reservasi)
+    {
+        $barber = Auth::user()->barber;
+
+        if (! $barber || $reservasi->barber_id !== $barber->id) {
+            abort(403);
+        }
+
+        if ($reservasi->status !== 'done') {
+            return back()->with('error', 'Foto before/after hanya bisa diunggah untuk reservasi yang sudah selesai.');
+        }
+
+        $request->validate([
+            'foto_before' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'foto_after' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
+
+        if ($request->hasFile('foto_before')) {
+            if ($reservasi->foto_before) {
+                Storage::disk('public')->delete($reservasi->foto_before);
+            }
+            $reservasi->foto_before = $request->file('foto_before')->store('transformasi', 'public');
+        }
+
+        if ($request->hasFile('foto_after')) {
+            if ($reservasi->foto_after) {
+                Storage::disk('public')->delete($reservasi->foto_after);
+            }
+            $reservasi->foto_after = $request->file('foto_after')->store('transformasi', 'public');
+        }
+
+        $reservasi->save();
+
+        return back()->with('success', 'Foto before/after berhasil disimpan!');
+    }
+
+    // Hapus foto before/after per-slot, dipakai kalau barber mau ganti foto yang sudah terlanjur diunggah.
+    public function hapusTransformasi(Request $request, Reservation $reservasi, string $slot)
+    {
+        $barber = Auth::user()->barber;
+
+        if (! $barber || $reservasi->barber_id !== $barber->id) {
+            abort(403);
+        }
+
+        if ($reservasi->status !== 'done') {
+            return back()->with('error', 'Foto before/after hanya bisa dihapus untuk reservasi yang sudah selesai.');
+        }
+
+        $kolom = 'foto_' . $slot;
+
+        if ($reservasi->{$kolom}) {
+            Storage::disk('public')->delete($reservasi->{$kolom});
+            $reservasi->{$kolom} = null;
+            $reservasi->save();
+        }
+
+        return back()->with('success', 'Foto berhasil dihapus.');
+    }
+
+    // Dipoll JS halaman kerja barber biar status ter-update tanpa reload, dibatasi cuma reservasi milik barber yang login.
     public function statusUpdates()
     {
         $barber = Auth::user()->barber;
 
         $reservations = $barber
-            ? Reservation::where('barber_id', $barber->id)->get(['id', 'status', 'payment_status'])
+            ? Reservation::where('barber_id', $barber->id)->get(['id', 'status', 'payment_status'])->append('payment_badge')
             : collect();
 
         return response()->json($reservations);

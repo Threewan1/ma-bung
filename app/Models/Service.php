@@ -9,6 +9,7 @@ class Service extends Model
     protected $fillable = [
         'nama_layanan',
         'harga',
+        'foto',
     ];
 
     public function reservations()
