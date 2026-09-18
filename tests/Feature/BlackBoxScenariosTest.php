@@ -325,6 +325,30 @@ class BlackBoxScenariosTest extends TestCase
         $this->assertSame('done', $selesai->fresh()->status);
     }
 
+    // ================= 10b. Batalkan reservasi yang sudah cancelled tidak kirim email dobel =================
+    public function test_scenario_10b_batalkan_reservasi_dua_kali_tidak_kirim_email_dobel(): void
+    {
+        Mail::fake();
+        $user = $this->customer();
+        $service = $this->service();
+
+        $reservasi = Reservation::create([
+            'user_id' => $user->id,
+            'service_id' => $service->id,
+            'tanggal' => now()->addDay()->toDateString(),
+            'jam' => '09:00',
+            'status' => 'pending',
+            'payment_method' => 'cod',
+            'payment_status' => 'unpaid',
+        ]);
+
+        $this->actingAs($user)->delete(route('reservasi.destroy', $reservasi->id));
+        $this->actingAs($user)->delete(route('reservasi.destroy', $reservasi->id));
+
+        $this->assertSame('cancelled', $reservasi->fresh()->status);
+        Mail::assertQueued(ReservationCancelled::class, 1);
+    }
+
     // ================= 11. Ubah data profil pelanggan =================
     public function test_scenario_11_ubah_profil_pelanggan_tersimpan(): void
     {
