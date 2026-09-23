@@ -78,7 +78,7 @@
 
             <form method="POST" action="{{ route('logout') }}" class="no-ajax-form mt-auto pt-3 border-top border-secondary-subtle">
                 @csrf
-                <button type="submit" class="btn btn-outline-danger w-100">
+                <button type="submit" class="btn btn-outline-danger offcanvas-logout-btn w-100">
                     Keluar
                 </button>
             </form>

@@ -45,7 +45,7 @@
 >
     <div class="offcanvas-header">
         <div class="d-flex align-items-center gap-2">
-            <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center fw-bold flex-shrink-0 overflow-hidden" style="width: 2.5rem; height: 2.5rem; font-size: 1rem;">
+            <div class="offcanvas-avatar rounded-circle bg-primary d-flex align-items-center justify-content-center fw-bold flex-shrink-0 overflow-hidden">
                 @if ($navUser->avatar)
                     <img src="{{ asset('storage/' . $navUser->avatar) }}" alt="Foto profil" class="w-100 h-100 object-fit-cover">
                 @else
@@ -116,17 +116,17 @@
             </li>
         </ul>
 
-        {{-- Satu-satunya form yang dikecualikan dari AJAX, logout harus reload penuh. --}}
-        <form method="POST" action="{{ route('logout') }}" class="no-ajax-form pt-3 border-top border-secondary-subtle">
-            @csrf
-            <button type="submit" class="btn btn-outline-danger w-100">
-                Keluar
-            </button>
-        </form>
-
         <a href="{{ route('reservasi.create') }}" class="btn btn-primary mt-auto">
             <i class="fas fa-calendar-check"></i> Reservasi Sekarang
         </a>
+
+        {{-- Satu-satunya form yang dikecualikan dari AJAX, logout harus reload penuh. --}}
+        <form method="POST" action="{{ route('logout') }}" class="no-ajax-form pt-3 border-top border-secondary-subtle">
+            @csrf
+            <button type="submit" class="btn btn-outline-danger offcanvas-logout-btn w-100">
+                Keluar
+            </button>
+        </form>
 
     </div>
 </div>

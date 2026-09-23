@@ -1889,6 +1889,42 @@ a {
     }
 }
 
+/* Avatar bulat di header #profilOffcanvas; base size di sini (dulu inline style) supaya bisa diperkecil lagi lewat media query mobile di bawah. */
+.offcanvas-avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 1rem;
+}
+
+/* Di HP kecil, offcanvas cuma 50vw lebar - judul, item menu, tombol Keluar, logo, dan avatar dikecilkan bareng supaya tidak wrap berantakan (kecuali teks yang memang panjang secara alami, seperti nama pelanggan). */
+@media (max-width: 575.98px) {
+    #menuUtama .offcanvas-title,
+    .profil-offcanvas .offcanvas-title {
+        font-size: 0.95rem;
+    }
+
+    #menuUtama .offcanvas-nav-link,
+    .profil-offcanvas .offcanvas-nav-link {
+        font-size: 0.85rem;
+    }
+
+    .offcanvas-logout-btn {
+        font-size: 0.85rem;
+    }
+
+    .offcanvas-avatar {
+        width: 2rem;
+        height: 2rem;
+        font-size: 0.8rem;
+    }
+
+    #menuUtama .brand-logo-sm,
+    .profil-offcanvas .brand-logo-sm {
+        width: 22px;
+        height: 22px;
+    }
+}
+
 /* Navbar landing page disembunyikan seluruhnya saat offcanvas menu terbuka; visibility ikut ditransisikan (bukan cuma opacity) supaya navbar yang transparan tidak masih bisa diklik/di-tab-focus. */
 #landingNavbar {
     width: 100%;

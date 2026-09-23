@@ -112,19 +112,19 @@
                 @endauth
             </ul>
 
+            <a href="{{ auth()->check() ? route('reservasi.create') : route('login') }}" class="btn btn-primary mt-auto ms-3">
+                <i class="fas fa-calendar-check"></i> Reservasi Sekarang
+            </a>
+
             @auth
                 {{-- Gaya disamakan dengan tombol Keluar di sidebar admin & offcanvas pelanggan. --}}
                 <form method="POST" action="{{ route('logout') }}" class="pt-2 pb-3 border-bottom border-secondary-subtle mb-3">
                     @csrf
-                    <button type="submit" class="btn btn-outline-danger w-100">
+                    <button type="submit" class="btn btn-outline-danger offcanvas-logout-btn w-100">
                         Keluar
                     </button>
                 </form>
             @endauth
-
-            <a href="{{ auth()->check() ? route('reservasi.create') : route('login') }}" class="btn btn-primary mt-auto ms-3">
-                <i class="fas fa-calendar-check"></i> Reservasi Sekarang
-            </a>
         </div>
     </div>
 
@@ -473,16 +473,16 @@
                     <p class="text-body-secondary small mb-1">Jln. Martadinata / Tambayako</p>
                     <p class="text-body-secondary small mb-1">Kota Mamuju, Sulawesi Barat</p>
                     <p class="text-body-secondary small mb-3">Setiap hari, 10.00 - 22.00 WITA</p>
-                    <a href="https://www.google.com/maps/search/?api=1&query=Jln.+Martadinata+Tambayako%2C+Kota+Mamuju%2C+Sulawesi+Barat" target="_blank" rel="noopener" class="btn btn-outline-warning btn-sm">
+                    <a href="https://maps.app.goo.gl/bLdbwgx4Zuq4Fx1VA?g_st=aw" target="_blank" rel="noopener" class="btn btn-outline-warning btn-sm">
                         <i class="bi bi-map"></i> Buka di Google Maps
                     </a>
                 </div>
                 <div class="col-md-4">
                     <h3 class="fs-6 fw-bold text-white mb-3">Ikuti Kami</h3>
                     <div class="d-flex gap-4 justify-content-center justify-content-md-start">
-                        <a href="#" class="social-link fs-4" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
-                        <a href="#" class="social-link fs-4" aria-label="WhatsApp"><i class="bi bi-whatsapp"></i></a>
-                        <a href="#" class="social-link fs-4" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+                        <a href="https://www.instagram.com/ma.bungbarber/" target="_blank" rel="noopener" class="social-link fs-4" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+                        <a href="https://www.tiktok.com/@ig_ma.bungbarber" target="_blank" rel="noopener" class="social-link fs-4" aria-label="TikTok"><i class="bi bi-tiktok"></i></a>
+                        <a href="https://wa.me/6282188146322" target="_blank" rel="noopener" class="social-link fs-4" aria-label="WhatsApp"><i class="bi bi-whatsapp"></i></a>
                     </div>
                 </div>
             </div>
