@@ -190,7 +190,7 @@
                 <div class="col-lg-6">
                     <h2 class="fs-2 fw-bold text-gold mb-3">Tentang Kami</h2>
                     <p class="fs-6 text-body-secondary">
-                        Ma'bung Barbershop telah melayani pelanggan sejak 2020 dengan standar potong rambut
+                        Ma'bung Barbershop telah melayani pelanggan sejak 2024 dengan standar potong rambut
                         premium ala pria modern. Ditangani oleh tim barber berpengalaman dan didukung
                         suasana tempat yang nyaman, kami berkomitmen memberikan hasil terbaik di setiap
                         kunjungan kamu.
